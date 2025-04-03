@@ -2,6 +2,7 @@
   pkgs,
   lib,
   modulesPath,
+  config,
   ...
 }: let
   haproxyConfig = ./haproxy.cfg;
@@ -17,6 +18,7 @@ in {
       hostname = "haproxy";
       ipAddress = "192.168.1.69"; # Update with your actual IP
     })
+    
     {
       # HAProxy specific configuration
       services.haproxy = {

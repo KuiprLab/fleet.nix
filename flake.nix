@@ -27,7 +27,7 @@
   in {
     # NixOS configurations for each host
     nixosConfigurations = {
-      haproxy = nixpkgs.lib.nixosSystem {
+      lxc-vm-haproxy = nixpkgs.lib.nixosSystem {
         inherit system pkgs;
         specialArgs = {inherit self;};
         modules =
@@ -36,13 +36,13 @@
             ./hosts/haproxy/configuration.nix
           ];
       };
-      technitium = nixpkgs.lib.nixosSystem {
+      bind = nixpkgs.lib.nixosSystem {
         inherit system pkgs;
         specialArgs = {inherit self;};
         modules =
           commonModules
           ++ [
-            ./hosts/technitium/configuration.nix
+            ./hosts/bind/configuration.nix
           ];
       };
     };
@@ -58,11 +58,12 @@
         };
       };
 
-      technitium = {
-        hostname = "hl-lxc-technitium.local";
+      bind = {
+        hostname = "10.0.0.11";
         profiles.system = {
           user = "root";
-          path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.technitium;
+          sshUser = "root";
+          path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.bind;
         };
       };
     };
