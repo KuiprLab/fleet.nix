@@ -3,6 +3,7 @@
 {
   imports = [
     ../utils/common.nix
+    ../utils/fleet.nix
   ];
 
   # Container specific networking

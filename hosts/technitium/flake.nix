@@ -3,7 +3,7 @@
 
     inputs = {
         nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-        bento.url = "github:rapodaca/bento";
+        bento.url = "github:rapenne-s/bento";
         bento.inputs.nixpkgs.follows = "nixpkgs";
     };
 

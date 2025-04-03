@@ -3,9 +3,10 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    bento.url = "github:rapenne-s/bento";
   };
 
-  outputs = { self, nixpkgs }: {
+  outputs = { self, nixpkgs, bento }: {
     nixosConfigurations.hl-lxc-bento-master = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       modules = [
@@ -39,7 +40,7 @@
           };
 
           environment.systemPackages = with pkgs; [
-            bento
+            bento.packages.x86_64-linux.default
             jq
             git
           ];
