@@ -1,4 +1,7 @@
-{pkgs, inputs, ...}: {
+{
+  pkgs,
+  ...
+}: {
   # Common configuration for LXC containersj
   mkLxcConfig = {
     hostname,
@@ -79,17 +82,17 @@
       };
     };
 
-system.autoUpgrade = {
-  enable = true;
-  flake = inputs.self.outPath;
-  flags = [
-    "--update-input"
-    "nixpkgs"
-    "--print-build-logs"
-  ];
-  dates = "02:00";
-  randomizedDelaySec = "45min";
-};
+    # system.autoUpgrade = {
+    #   enable = true;
+    #   flake = inputs.self.outPath;
+    #   flags = [
+    #     "--update-input"
+    #     "nixpkgs"
+    #     "--print-build-logs"
+    #   ];
+    #   dates = "02:00";
+    #   randomizedDelaySec = "45min";
+    # };
 
     # Workaround for https://github.com/NixOS/nixpkgs/issues/157918
     systemd.mounts = [
