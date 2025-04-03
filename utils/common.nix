@@ -1,4 +1,4 @@
-{pkgs}: {
+{pkgs, ...}: {
   # Common configuration for LXC containersj
   mkLxcConfig = {
     hostname,
@@ -6,7 +6,10 @@
   }: {
     networking = {
       hostName = hostname;
-      defaultGateway = "192.168.1.1";
+      defaultGateway = {
+        address = "192.168.1.1";
+        interface = "eth0";
+      };
       nameservers = ["192.168.1.1"];
       interfaces.eth0 = {
         ipv4.addresses = [
@@ -19,7 +22,6 @@
     };
 
     boot.isContainer = true;
-
     # Basic system configuration
     system.stateVersion = "23.11";
 
@@ -37,8 +39,9 @@
     services.openssh = {
       enable = true;
       settings = {
-        PermitRootLogin = "prohibit-password";
-        PasswordAuthentication = false;
+        PermitRootLogin = "yes";
+        PasswordAuthentication = true;
+        PermitEmptyPasswords = "yes";
       };
     };
 
@@ -59,6 +62,7 @@
 
     nix = {
       settings = {
+        sandbox = false;
         # Add Cachix binary caches (replace "your-cache" with your Cachix cache name)
         trusted-binary-caches = [
           "https://cache.nixos.org/"

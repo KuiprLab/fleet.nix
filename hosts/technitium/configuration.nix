@@ -1,12 +1,15 @@
 {
   pkgs,
   lib,
+  modulesPath,
   ...
 }: let
   commonUtils = import ../../utils/common.nix {inherit pkgs;};
 in {
   imports = [
     # You can import hardware-specific configurations here
+
+    (modulesPath + "/virtualisation/proxmox-lxc.nix")
   ];
 
   # Use the common configuration for LXC containers
@@ -16,6 +19,10 @@ in {
       ipAddress = "10.0.0.11"; # Update with your actual IP
     })
     {
+      proxmoxLXC = {
+        manageNetwork = false;
+        privileged = false;
+      };
       # Technitium DNS Server configuration
       virtualisation.docker = {
         enable = true;

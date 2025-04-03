@@ -1,13 +1,14 @@
 {
   pkgs,
   lib,
+  modulesPath,
   ...
 }: let
   haproxyConfig = ./haproxy.cfg;
   commonUtils = import ../../utils/common.nix {inherit pkgs;};
 in {
   imports = [
-    # You can import hardware-specific configurations here
+    (modulesPath + "/virtualisation/proxmox-lxc.nix")
   ];
 
   # Use the common configuration for LXC containers
@@ -23,6 +24,11 @@ in {
         config = builtins.readFile haproxyConfig;
       };
 
+      proxmoxLXC = {
+        manageNetwork = false;
+        privileged = false;
+      };
+
       # Open required ports
       networking.firewall = {
         enable = true;
@@ -36,10 +42,17 @@ in {
       ];
 
       # Enable Prometheus metrics for monitoring
-      # services.prometheus.exporters.haproxy = {
-      #   enable = true;
-      #   scrapeUri = "http://localhost:1936/metrics";
-      # };
+      services.prometheus = {
+        enable = true;
+        scrapeConfigs = [
+          {
+            job_name = "haproxy";
+            static_configs = [
+              {targets = ["localhost:9101"];}
+            ];
+          }
+        ];
+      };
 
       # Add a systemd service for health checking
       systemd.services.haproxy-healthcheck = {
