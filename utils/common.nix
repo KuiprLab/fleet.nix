@@ -1,4 +1,4 @@
-{pkgs, ...}: {
+{pkgs, inputs, ...}: {
   # Common configuration for LXC containersj
   mkLxcConfig = {
     hostname,
@@ -79,31 +79,24 @@
       };
     };
 
-    # Enable automatic flake updates via cron
-    systemd.services.flake-update = {
-      description = "Update system from flake";
-      serviceConfig = {
-        Type = "oneshot";
-        ExecStart = "${pkgs.bash}/bin/bash -c 'cd /etc/nixos && ${pkgs.git}/bin/git pull && ${pkgs.nix}/bin/nix flake update && nixos-rebuild switch --flake .#'";
-      };
-    };
+system.autoUpgrade = {
+  enable = true;
+  flake = inputs.self.outPath;
+  flags = [
+    "--update-input"
+    "nixpkgs"
+    "--print-build-logs"
+  ];
+  dates = "02:00";
+  randomizedDelaySec = "45min";
+};
 
-    # Woraround for https://github.com/NixOS/nixpkgs/issues/157918
+    # Workaround for https://github.com/NixOS/nixpkgs/issues/157918
     systemd.mounts = [
       {
         where = "/sys/kernel/debug";
         enable = false;
       }
     ];
-
-    systemd.timers.flake-update = {
-      wantedBy = ["timers.target"];
-      partOf = ["flake-update.service"];
-      timerConfig = {
-        OnCalendar = "daily";
-        Persistent = true;
-        RandomizedDelaySec = "1h";
-      };
-    };
   };
 }
