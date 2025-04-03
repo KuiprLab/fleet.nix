@@ -19,16 +19,29 @@
   }: let
     system = "x86_64-linux";
     pkgs = import nixpkgs {inherit system;};
+    
+    # Common modules for all hosts
+    commonModules = [
+      ./utils/auto-update.nix
+    ];
   in {
     # NixOS configurations for each host
     nixosConfigurations = {
       haproxy = nixpkgs.lib.nixosSystem {
         inherit system pkgs;
-        modules = [./hosts/haproxy/configuration.nix];
+        specialArgs = { inherit self; };
+        modules = commonModules ++ [
+          ./hosts/haproxy/configuration.nix
+          ./utils/webhook-service.nix
+        ];
       };
       technitium = nixpkgs.lib.nixosSystem {
         inherit system pkgs;
-        modules = [./hosts/technitium/configuration.nix];
+        specialArgs = { inherit self; };
+        modules = commonModules ++ [
+          ./hosts/technitium/configuration.nix
+          ./utils/webhook-service.nix
+        ];
       };
     };
 

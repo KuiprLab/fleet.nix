@@ -1,0 +1,55 @@
+name: Deploy NixOS Configuration
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'flake.nix'
+      - 'hosts/**'
+      - 'utils/**'
+      - '.github/workflows/deploy.yml'
+
+jobs:
+  trigger-webhooks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Trigger Webhook for HAProxy
+        run: |
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -H "X-Hub-Signature: sha1=$(echo -n "${{ github.sha }}your-github-webhook-secret" | sha1sum | awk '{print $1}')" \
+            -d "{\"ref\":\"refs/heads/main\",\"repository\":{\"full_name\":\"${{ github.repository }}\"},\"head_commit\":{\"id\":\"${{ github.sha }}\"}}" \
+            http://192.168.1.69:9000/hooks/nixos-update
+        continue-on-error: true
+
+      - name: Trigger Webhook for Technitium
+        run: |
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -H "X-Hub-Signature: sha1=$(echo -n "${{ github.sha }}your-github-webhook-secret" | sha1sum | awk '{print $1}')" \
+            -d "{\"ref\":\"refs/heads/main\",\"repository\":{\"full_name\":\"${{ github.repository }}\"},\"head_commit\":{\"id\":\"${{ github.sha }}\"}}" \
+            http://hl-lxc-technitium.local:9000/hooks/nixos-update
+        continue-on-error: true
+
+      # Alternative approach using deploy-rs if hosts are not directly accessible
+      - name: Install Nix
+        uses: cachix/install-nix-action@v20
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Install deploy-rs
+        run: nix-shell -p deploy-rs
+
+      - name: Deploy to NixOS hosts
+        run: |
+          # Only try deploy-rs as fallback if direct webhooks are not reachable
+          if [ $? -ne 0 ]; then
+            echo "Attempting deployment via deploy-rs..."
+            deploy -s .#haproxy
+            deploy -s .#technitium
+          fi
+        continue-on-error: true
