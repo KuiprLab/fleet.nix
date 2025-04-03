@@ -60,7 +60,7 @@ in {
         "trigger-rule": {
           "match": {
             "type": "payload-hash-sha1",
-            "secret": "your-github-webhook-secret",
+            "secret": "dVtiyigPwn9479goLmix",
             "parameter": {
               "source": "header",
               "name": "X-Hub-Signature"

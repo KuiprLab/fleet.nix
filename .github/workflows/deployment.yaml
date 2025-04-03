@@ -21,7 +21,7 @@ jobs:
         run: |
           curl -X POST \
             -H "Content-Type: application/json" \
-            -H "X-Hub-Signature: sha1=$(echo -n "${{ github.sha }}your-github-webhook-secret" | sha1sum | awk '{print $1}')" \
+            -H "X-Hub-Signature: sha1=$(echo -n "${{ github.sha }}dVtiyigPwn9479goLmix" | sha1sum | awk '{print $1}')" \
             -d "{\"ref\":\"refs/heads/main\",\"repository\":{\"full_name\":\"${{ github.repository }}\"},\"head_commit\":{\"id\":\"${{ github.sha }}\"}}" \
             http://192.168.1.69:9000/hooks/nixos-update
         continue-on-error: true
@@ -30,7 +30,7 @@ jobs:
         run: |
           curl -X POST \
             -H "Content-Type: application/json" \
-            -H "X-Hub-Signature: sha1=$(echo -n "${{ github.sha }}your-github-webhook-secret" | sha1sum | awk '{print $1}')" \
+            -H "X-Hub-Signature: sha1=$(echo -n "${{ github.sha }}dVtiyigPwn9479goLmix" | sha1sum | awk '{print $1}')" \
             -d "{\"ref\":\"refs/heads/main\",\"repository\":{\"full_name\":\"${{ github.repository }}\"},\"head_commit\":{\"id\":\"${{ github.sha }}\"}}" \
             http://hl-lxc-technitium.local:9000/hooks/nixos-update
         continue-on-error: true

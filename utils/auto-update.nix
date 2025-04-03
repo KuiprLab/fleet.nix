@@ -13,7 +13,7 @@
       fi
       
       # Clone the repository
-      ${pkgs.git}/bin/git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git /etc/nixos
+      ${pkgs.git}/bin/git clone https://github.com/KuiprLab/fleet.nix /etc/nixos
       
       # Set Git configuration to allow pulling without authentication for public repos
       cd /etc/nixos
