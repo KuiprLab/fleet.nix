@@ -1,20 +1,22 @@
 { nixpkgs }:
 
 {
-  # Common configuration for LXC containers
-  mkLxcConfig = { hostname, ipAddress, ... }: {
+  # Common configuration for LXC containersj
+  mkLxcConfig = { hostname, ipAddress }: {
     networking = {
       hostName = hostname;
-      useDHCP = false;
-      defaultGateway = "192.168.1.1";  
-      nameservers = [ "192.168.1.112" "9.9.9.9" ];
-      interfaces.eth0 = {  # LXC typically uses eth0
+      defaultGateway = "192.168.1.1"; # Adjust if needed
+      nameservers = [ "192.168.1.1" ]; # Adjust if needed
+      interfaces.eth0 = {
         ipv4.addresses = [{
           address = ipAddress;
-          prefixLength = 24; 
+          prefixLength = 24; # Adjust if needed
         }];
       };
     };
+
+            boot.isContainer = true;
+
     
     # Basic system configuration
     system.stateVersion = "23.11";

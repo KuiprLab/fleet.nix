@@ -1,14 +1,14 @@
-{ config, pkgs, lib, utils, ... }:
+{ config, pkgs, lib, ... }@args:
 
 let
+  utils = args.utils;
   haproxyConfig = ./haproxy.cfg;
 in {
   imports = [
     # You can import hardware-specific configurations here
   ];
-
+  
   # Use the common configuration for LXC containers
-  # This assumes that utils.mkLxcConfig is accessible from the top-level flake
   config = lib.mkMerge [
     (utils.mkLxcConfig {
       hostname = "haproxy";
