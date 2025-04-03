@@ -5,12 +5,12 @@
   mkLxcConfig = { hostname, ipAddress }: {
     networking = {
       hostName = hostname;
-      defaultGateway = "192.168.1.1"; # Adjust if needed
-      nameservers = [ "192.168.1.1" ]; # Adjust if needed
+      defaultGateway = "192.168.1.1";
+      nameservers = [ "192.168.1.1" ];
       interfaces.eth0 = {
         ipv4.addresses = [{
           address = ipAddress;
-          prefixLength = 24; # Adjust if needed
+          prefixLength = 24;
         }];
       };
     };

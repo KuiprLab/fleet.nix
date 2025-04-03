@@ -29,7 +29,7 @@
       
       # Import utils
       utils = import ./utils/common.nix { inherit nixpkgs; };
-      
+            
       # Common configuration for all hosts
       commonConfiguration = { config, pkgs, ... }: {
         imports = [
