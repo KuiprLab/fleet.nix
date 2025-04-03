@@ -1,55 +1,133 @@
-name: Validate and Tag NixOS Configuration
-
+name: "Nix Configuration Validation"
 on:
   push:
     branches:
-      - main
-    paths:
-      - 'flake.nix'
-      - 'hosts/**'
-      - 'utils/**'
-      - '.github/workflows/deploy.yml'
+      - "main"
+    paths-ignore:
+      - '.github/**'
+      - 'README.md'
+  pull_request:
+    branches:
+      - "main"
 
 jobs:
-  validate-and-tag:
+  security-check:
+    name: GitGuardian Security Scan
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Install Nix
-        uses: cachix/install-nix-action@v20
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          nix_path: nixpkgs=channel:nixos-unstable
-
-      - name: Validate NixOS configurations
-        run: |
-          # Check if configurations build
-          for host in haproxy technitium; do
-            echo "Validating configuration for $host..."
-            nix flake check .#nixosConfigurations.$host
-          done
-
-      - name: Create deployment tag
-        id: tag
-        run: |
-          # Create a tag with timestamp to mark a validated deployment
-          TIMESTAMP=$(date +%Y%m%d%H%M%S)
-          TAG="deploy-${TIMESTAMP}"
-          git tag $TAG
-          git push origin $TAG
-          echo "Created deployment tag: $TAG"
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-
-      - name: Create GitHub Release
-        uses: actions/create-release@v1
+          fetch-depth: 0
+      - name: GitGuardian scan
+        uses: GitGuardian/ggshield/actions/secret@v1.38.0
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.tag.outputs.tag }}
-          release_name: Deployment ${{ steps.tag.outputs.tag }}
-          body: |
-            Validated NixOS configuration deployment.
-            Commit: ${{ github.sha }}
-          draft: false
-          prerelease: false
+          GITHUB_PUSH_BEFORE_SHA: ${{ github.event.before }}
+          GITHUB_PUSH_BASE_SHA: ${{ github.event.base }}
+          GITHUB_PULL_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          GITHUB_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
+
+  lint:
+    name: Statix Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+      - name: Run statix linter
+        run: |
+          echo "Linting Flake..."
+          if make lint; then
+            echo "success=true" >> $GITHUB_ENV
+          else
+            echo "Lint failed, listing flake.lock for debugging:"
+            cat flake.lock
+            echo "success=false" >> $GITHUB_ENV
+            exit 1
+          fi
+
+
+  detect-configs:
+    name: Detect Configurations
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v16
+      - name: Generate Configuration Matrix
+        id: set-matrix
+        shell: bash
+        run: |
+          # Use nix eval to get configurations directly from the flake
+          echo "Detecting NixOS configurations..."
+          NIXOS_CONFIGS=$(nix eval --impure --json .#nixosConfigurations --apply builtins.attrNames)
+          
+          echo "Detecting Darwin configurations..."
+          DARWIN_CONFIGS=$(nix eval --impure --json .#darwinConfigurations --apply builtins.attrNames 2>/dev/null || echo "[]")
+          
+          # Debug output
+          echo "Detected NixOS configs: $NIXOS_CONFIGS"
+          echo "Detected Darwin configs: $DARWIN_CONFIGS"
+          
+          # Create a simpler matrix JSON formation approach
+          echo "Building matrix JSON..."
+          MATRIX_JSON='{"include":['
+          
+          # Process NixOS configs
+          NIXOS_ARRAY=$(echo "$NIXOS_CONFIGS" | jq -c .)
+          if [ "$NIXOS_ARRAY" != "[]" ]; then
+            for config in $(echo "$NIXOS_CONFIGS" | jq -r '.[]'); do
+              MATRIX_JSON+="{"
+              MATRIX_JSON+="\"name\":\"$config\","
+              MATRIX_JSON+="\"os\":\"ubuntu-latest\","
+              MATRIX_JSON+="\"type\":\"nixos\","
+              MATRIX_JSON+="\"config\":\"nixosConfigurations.$config.config.system.build.toplevel\""
+              MATRIX_JSON+="},"
+            done
+          fi
+          
+          # Process Darwin configs
+          DARWIN_ARRAY=$(echo "$DARWIN_CONFIGS" | jq -c .)
+          if [ "$DARWIN_ARRAY" != "[]" ]; then
+            for config in $(echo "$DARWIN_CONFIGS" | jq -r '.[]'); do
+              MATRIX_JSON+="{"
+              MATRIX_JSON+="\"name\":\"$config\","
+              MATRIX_JSON+="\"os\":\"macos-latest\","
+              MATRIX_JSON+="\"type\":\"darwin\","
+              MATRIX_JSON+="\"config\":\"darwinConfigurations.$config.system\""
+              MATRIX_JSON+="},"
+            done
+          fi
+          
+          # Remove trailing comma if it exists
+          MATRIX_JSON=${MATRIX_JSON%,}
+          MATRIX_JSON+="]}"
+          
+          echo "Matrix JSON: $MATRIX_JSON"
+          
+          echo "matrix=$MATRIX_JSON" >> "$GITHUB_OUTPUT"
+
+  test-configurations:
+    name: Test Nix Configurations
+    needs: [security-check, lint, vulnerability-scan, detect-configs]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.detect-configs.outputs.matrix)}}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v16
+      - name: Enable Nix Flakes
+        run: |
+          mkdir -p ~/.config/nix
+          echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
+      - name: Build Configuration
+        run: |
+          echo "Building configuration for ${{ matrix.name }} (${{ matrix.type }})"
+          nix build .#${{ matrix.config }} --accept-flake-config --impure --extra-experimental-features flakes --extra-experimental-features nix-command --dry-run
+          echo "Running vulnix"
+          nix run nixpkgs#vulnix -- --system
