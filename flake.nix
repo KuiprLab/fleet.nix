@@ -10,96 +10,35 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     
-    # For flake updates
-    flake-utils.url = "github:numtide/flake-utils";
-    
-    # For system hardening
-    nixos-hardened = {
-      url = "github:nixos/nixos-hardware";
-    };
   };
 
-  outputs = { self, nixpkgs, deploy-rs, flake-utils, nixos-hardened, ... }:
+  outputs = { self, nixpkgs, deploy-rs, ... }:
     let
-      # System types to support
-      supportedSystems = [ "x86_64-linux" "aarch64-linux" ];
-      
-      # Helper function to generate an attribute set by system
-      forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
       
       # Import utils
-      utils = import ./utils/common.nix { inherit nixpkgs; };
+ system = "x86_64-linux";
+                  pkgs = import nixpkgs { inherit system; };
+
+            common = import ./utils/common.nix;
             
-      # Common configuration for all hosts
-      commonConfiguration = { config, pkgs, ... }: {
-        imports = [
-          # Add common modules here
-        ];
-        
-        # Enable flakes and auto-update
-        nix = {
-          package = pkgs.nixVersions.stable;
-          extraOptions = ''
-            experimental-features = nix-command flakes
-            auto-optimise-store = true
-          '';
-          gc = {
-            automatic = true;
-            dates = "weekly";
-            options = "--delete-older-than 30d";
-          };
-          settings = {
-            auto-optimise-store = true;
-            allowed-users = [ "@wheel" ];
-            trusted-users = [ "root" "@wheel" ];
-          };
-        };
-        
-        # Auto-update system from Git
-        system.autoUpgrade = {
-          enable = true;
-          flake = "github:yourusername/nixos-homelab";  # Replace with your actual repo
-          dates = "04:00";
-          randomizedDelaySec = "45min";
-          allowReboot = true;
-          rebootWindow = {
-            lower = "01:00";
-            upper = "05:00";
-          };
-        };
-      };
     in {
       # NixOS configurations for each host
-      nixosConfigurations = {
+ nixosConfigurations = {
         haproxy = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          modules = [
-            ./hosts/haproxy/configuration.nix
-            commonConfiguration
-          ];
-          specialArgs = { 
-            inherit utils nixos-hardened;
-          };
+          inherit system pkgs common;
+          modules = [ ./hosts/haproxy ];
         };
-        
+
         technitium = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          modules = [
-            ./hosts/technitium/configuration.nix
-            commonConfiguration
-          ];
-          specialArgs = { 
-            inherit utils nixos-hardened;
-          };
+          inherit system pkgs common;
+          modules = [ ./hosts/technitium ];
         };
-        
-        # Add more hosts here
       };
       
       # Deployment configuration using deploy-rs
       deploy.nodes = {
         haproxy = {
-          hostname = "haproxy.local";  # Replace with actual hostname
+          hostname = "hl-lxc-haproxy.local";
           profiles.system = {
             user = "root";
             path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.haproxy;
@@ -107,29 +46,14 @@
         };
         
         technitium = {
-          hostname = "technitium.local";  # Replace with actual hostname
+          hostname = "hl-lxc-technitium.local";
           profiles.system = {
             user = "root";
             path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.technitium;
           };
         };
         
-        # Add more deployment nodes here
       };
-      
-      # Development shell for working with this repository
-      devShells = forAllSystems (system:
-        let pkgs = nixpkgs.legacyPackages.${system};
-        in {
-          default = pkgs.mkShell {
-            buildInputs = with pkgs; [
-              nixos-rebuild
-              deploy-rs.packages.${system}.deploy-rs
-              git
-            ];
-          };
-        }
-      );
       
       # Check deployments
       checks = builtins.mapAttrs (system: deployLib: deployLib.deployChecks self.deploy) deploy-rs.lib;

@@ -1,7 +1,6 @@
-{ config, pkgs, lib, ... }@args:
+{ pkgs, lib, common, ... }@args:
 
 let
-  utils = args.utils;
   haproxyConfig = ./haproxy.cfg;
 in {
   imports = [
@@ -10,7 +9,7 @@ in {
   
   # Use the common configuration for LXC containers
   config = lib.mkMerge [
-    (utils.mkLxcConfig {
+    (common.mkLxcConfig {
       hostname = "haproxy";
       ipAddress = "192.168.1.69";  # Update with your actual IP
     })
@@ -34,10 +33,10 @@ in {
       ];
       
       # Enable Prometheus metrics for monitoring
-      services.prometheus.exporters.haproxy = {
-        enable = true;
-        scrapeUri = "http://localhost:1936/metrics";
-      };
+      # services.prometheus.exporters.haproxy = {
+      #   enable = true;
+      #   scrapeUri = "http://localhost:1936/metrics";
+      # };
       
       # Add a systemd service for health checking
       systemd.services.haproxy-healthcheck = {

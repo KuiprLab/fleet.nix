@@ -34,15 +34,17 @@
     # Enable SSH for remote access
     services.openssh = {
       enable = true;
-      permitRootLogin = "prohibit-password"; 
-      passwordAuthentication = false;
+    settings = {
+                PermitRootLogin = "prohibit-password";
+                PasswordAuthentication = false;
+
+            };
     };
     
     # Security hardening
     security = {
       sudo.wheelNeedsPassword = false;  # For automated deployments
       auditd.enable = true;
-      audit.enable = true;
     };
     
     # Create a default user with SSH access

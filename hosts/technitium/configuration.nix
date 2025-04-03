@@ -1,4 +1,4 @@
-{ config, pkgs, lib, utils, ... }:
+{ pkgs, lib, common, ... }:
 
 {
   imports = [
@@ -7,7 +7,7 @@
 
   # Use the common configuration for LXC containers
   config = lib.mkMerge [
-    (utils.mkLxcConfig {
+    (common.mkLxcConfig {
       hostname = "technitium";
       ipAddress = "10.0.0.11";  # Update with your actual IP
     })
