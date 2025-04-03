@@ -1,31 +1,64 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, utils, ... }:
 
-{
+let
+  haproxyConfig = ./haproxy.cfg;
+in {
   imports = [
-    ../utils/common.nix
-    ../utils/fleet.nix
+    # You can import hardware-specific configurations here
   ];
 
-  # Container specific networking
-  networking.hostName = "haproxy";
-  networking.interfaces.eth0.ipv4.addresses = [
-    { address = "10.0.0.11"; prefixLength = 24; }
+  # Use the common configuration for LXC containers
+  # This assumes that utils.mkLxcConfig is accessible from the top-level flake
+  config = lib.mkMerge [
+    (utils.mkLxcConfig {
+      hostname = "haproxy";
+      ipAddress = "192.168.1.69";  # Update with your actual IP
+    })
+    {
+      # HAProxy specific configuration
+      services.haproxy = {
+        enable = true;
+        config = builtins.readFile haproxyConfig;
+      };
+      
+      # Open required ports
+      networking.firewall = {
+        enable = true;
+        allowedTCPPorts = [ 80 443 1936 ];  # HTTP, HTTPS, HAProxy stats
+      };
+      
+      # Additional packages
+      environment.systemPackages = with pkgs; [
+        haproxy
+        socat  # Useful for HAProxy socket commands
+      ];
+      
+      # Enable Prometheus metrics for monitoring
+      services.prometheus.exporters.haproxy = {
+        enable = true;
+        scrapeUri = "http://localhost:1936/metrics";
+      };
+      
+      # Add a systemd service for health checking
+      systemd.services.haproxy-healthcheck = {
+        description = "HAProxy Health Check";
+        after = [ "haproxy.service" ];
+        wantedBy = [ "multi-user.target" ];
+        serviceConfig = {
+          Type = "oneshot";
+          ExecStart = "${pkgs.curl}/bin/curl -f http://localhost:1936/stats";
+        };
+      };
+      
+      # Setup a timer to check health periodically
+      systemd.timers.haproxy-healthcheck = {
+        wantedBy = [ "timers.target" ];
+        partOf = [ "haproxy-healthcheck.service" ];
+        timerConfig = {
+          OnBootSec = "5min";
+          OnUnitActiveSec = "5min";
+        };
+      };
+    }
   ];
-  networking.defaultGateway = "10.0.0.1";
-  networking.nameservers = [ "10.0.0.10" "1.1.1.1" ];
-  
-  # Open necessary ports
-  networking.firewall.allowedTCPPorts = [ 22 80 443 8404 ];
-  
-  # HAProxy configuration
-  services.haproxy = {
-    enable = true;
-    config = builtins.readFile ../utils/haproxy-config.cfg;
-  };
-
-  # Enable Bento for deployment
-  services.bento.enable = true;
-  
-  # Set system state version
-  system.stateVersion = "23.11";
 }

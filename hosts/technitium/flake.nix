@@ -1,40 +1,16 @@
 {
-    description = "Technitium DNS Server LXC Container";
+  description = "Technitium DNS server configuration";
 
-    inputs = {
-        nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-        bento.url = "github:rapenne-s/bento";
-        bento.inputs.nixpkgs.follows = "nixpkgs";
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  };
+
+  outputs = { self, nixpkgs }: {
+    # This is a host-specific flake that can be used independently
+    # or as part of the main flake
+    nixosConfigurations.technitium = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
+      modules = [ ./configuration.nix ];
     };
-
-    outputs = { self, nixpkgs, bento, ... }:
-        let
-            system = "x86_64-linux";
-            pkgs = nixpkgs.legacyPackages.${system};
-            lib = nixpkgs.lib;
-
-            bentoNodes = {
-                technitium = {
-                    nixosModules = [
-                        bento.nixosModules.bento
-                        ./configuration.nix
-                    ];
-                    hostName = "technitium.local"; # Update with your actual LXC hostname or IP
-                    sshOpts = [ "-p" "22" "-i" "/path/to/your/private/key" ];
-                };
-            };
-
-        in {
-            # Expose as a bento network for deployment
-            bento = bento.lib.${system}.makeBentoNetworkFromNodes bentoNodes;
-
-            # Expose as NixOS configuration for local testing
-            nixosConfigurations.technitium = lib.nixosSystem {
-                inherit system;
-                modules = [
-                    bento.nixosModules.bento
-                    ./configuration.nix
-                ];
-            };
-        };
+  };
 }
