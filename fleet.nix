@@ -17,8 +17,8 @@
 
   users = [
     {
-      username = "root";
-      key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDJw0fcEfsKF1m12KWuO0HRwsq36XQ5PGlKQCvU/zWPw root@192.168.1.69";
+      username = "router";
+      key = "ssh-ed25519 AAAAC3NzaC2aZGI1OTE5AAAAOIOZKLFCZLM67viQXHYRjraE6WLfvETMkjjgSz0mxMzS root@router";
     }
   ];
 in {
