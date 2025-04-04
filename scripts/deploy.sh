@@ -10,9 +10,9 @@ HOST=$(echo "$CONFIGS" | fzf --prompt "Select config to deploy: ")
 echo "Deploying $HOST..."
 if [ -n "$HOST" ]; then
   echo "Deploying configuration: $HOST"
-  git add .
-  git commit -m "chore: automatic commit before deployment"
-  git push
+  git add . || true
+  git commit -m "chore: automatic commit before deployment" || true
+  git push || true
   nix run nixpkgs#deploy-rs -- --remote-build -s .#"$HOST"
 else
   echo "No configuration selected."
