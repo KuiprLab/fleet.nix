@@ -1,6 +1,6 @@
 # LXC NixOS Fleet
 
-A multi-flake project for deploying NixOS to LXC containers using Bento. Each container has its own independent flake for maximum flexibility and modularity.
+NixOS flake configurations for my LXC containers. Easily deploy new containers and configurations using bash scripts.
 
 ## Directory Structure
 
