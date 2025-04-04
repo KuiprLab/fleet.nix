@@ -59,6 +59,7 @@ NixOS flake configurations for my LXC containers. Easily deploy new containers a
 };
 ```
 3. Create a new node configuration inside `deploy.nodes` in your flake:
+`root` is the default username for LXCs in Proxmox
 ```nix
 <hostname> = {
     hostname = "<hostname-or-ip>";
@@ -69,7 +70,6 @@ NixOS flake configurations for my LXC containers. Easily deploy new containers a
     };
 };
 ```
-`root` is the default username for LXCs in Proxmox
 4. Edit your configuration.nix
 5. Run `./scripts/deploy-lxc.sh` to create a new LXC
 6. Run `./scripts/deploy.sh` to deploy your node
