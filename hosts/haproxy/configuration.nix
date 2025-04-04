@@ -18,6 +18,7 @@
 in {
   imports = [
     (modulesPath + "/virtualisation/proxmox-lxc.nix")
+        ./acme-http-server.nix
   ];
 
   # Use the common configuration for LXC containers
@@ -34,21 +35,24 @@ in {
         config = builtins.readFile ./haproxy.cfg;
       };
 
-      # ACME/Let's Encrypt for automatic SSL certificates
+      # ACME/Let's Encrypt for automatic SSL certificates using HTTP challenge
       security.acme = {
         acceptTerms = true;
         defaults.email = "admin@kuipr.de";
         certs = {
           "hl.kuipr.de" = {
             extraDomainNames = builtins.filter (d: d != "hl.kuipr.de") domains;
-            dnsProvider = "cloudflare";
-            credentialsFile = "/var/lib/secrets/cloudflare.env";
-            dnsPropagationCheck = true;
-            webroot = null; # Use DNS challenge instead of HTTP
+            webroot = "/var/lib/acme/acme-challenge";  # Directory for HTTP challenge files
             group = "haproxy"; # Allow HAProxy to read certificates
           };
         };
       };
+
+      # Create acme-challenge directory for HTTP verification
+      systemd.tmpfiles.rules = [
+        "d /var/lib/acme/acme-challenge 0755 acme haproxy -"
+        "d /var/lib/secrets 0750 root root -"
+      ];
 
       # Create combined certificate and key file for HAProxy
       systemd.services.haproxy-ssl-setup = {
@@ -67,11 +71,6 @@ in {
           '';
         };
       };
-      
-      # Create this directory to store ACME secrets
-      systemd.tmpfiles.rules = [
-        "d /var/lib/secrets 0750 root root -"
-      ];
 
       # Let's also configure SSH certificates through ACME for convenience
       services.openssh = {
@@ -115,16 +114,12 @@ in {
       # Instructions for post-installation setup
       system.activationScripts.haproxySetupInstructions = ''
         echo "==============================================================="
-        echo "HAProxy Configuration with Automatic SSL Setup"
+        echo "HAProxy Configuration with Automatic SSL Setup (HTTP Challenge)"
         echo "==============================================================="
         echo ""
-        echo "IMPORTANT: Before running this configuration, create the following file:"
-        echo "/var/lib/secrets/cloudflare.env with the following content:"
+        echo "Your HAProxy is configured to use HTTP challenges for Let's Encrypt."
         echo ""
-        echo "CLOUDFLARE_EMAIL=your-cloudflare-email@example.com"
-        echo "CLOUDFLARE_API_KEY=your-global-api-key"
-        echo ""
-        echo "Then run: systemctl restart acme-hl.kuipr.de.service"
+        echo "After deployment, certificates will be automatically requested."
         echo "==============================================================="
       '';
     }
