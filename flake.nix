@@ -27,7 +27,7 @@
   in {
     # NixOS configurations for each host
     nixosConfigurations = {
-      lxc-vm-haproxy = nixpkgs.lib.nixosSystem {
+      hl-lxc-haproxy = nixpkgs.lib.nixosSystem {
         inherit system pkgs;
         specialArgs = {inherit self;};
         modules =
@@ -49,12 +49,12 @@
 
     # Deployment configuration using deploy-rs
     deploy.nodes = {
-      haproxy = {
+      lxc-vm-haproxy = {
         hostname = "192.168.1.69";
         profiles.system = {
           user = "root";
           sshUser = "root";
-          path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.haproxy;
+          path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.hl-lxc-haproxy;
         };
       };
 
