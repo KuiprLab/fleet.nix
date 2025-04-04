@@ -49,7 +49,7 @@
 
     # Deployment configuration using deploy-rs
     deploy.nodes = {
-      lxc-hl-haproxy = {
+      hl-lxc-haproxy = {
         hostname = "192.168.1.69";
         profiles.system = {
           user = "root";
