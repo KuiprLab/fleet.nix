@@ -112,7 +112,7 @@ jobs:
 
   test-configurations:
     name: Test Nix Configurations
-    needs: [security-check, lint, vulnerability-scan, detect-configs]
+    needs: [security-check, lint, detect-configs]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
