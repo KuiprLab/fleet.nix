@@ -3,7 +3,6 @@
 
 let
   commonUtils = import ../../utils/common.nix { inherit pkgs; };
-  sshAuth = import ../../utils/ssh-auth.nix { inherit pkgs lib config; };
   
   # Define zones
   primaryZones = {
@@ -72,8 +71,6 @@ in {
       ipAddress = "10.0.0.11"; # Same IP as technitium had
     })
     
-    # Add secure SSH configuration
-    sshAuth.mkSecureSSHConfig
     
     {
       proxmoxLXC = {
@@ -128,23 +125,11 @@ in {
       # Open required firewall ports
       networking.firewall = {
         enable = true;
-        allowedTCPPorts = [53];
         allowedUDPPorts = [53];
+        allowedTCPPorts = [22];
       };
       
-      # Web-based DNS administration (optional)
-      services.webmin = {
-        enable = true;
-        port = 10000;
-        ssl = true;
-        interface = "0.0.0.0";
-        extraModules = ["bind"];
-      };
       
-      # Open Webmin port if enabled
-      networking.firewall.allowedTCPPorts = lib.mkIf config.services.webmin.enable [ 
-        config.services.webmin.port 
-      ];
       
       # Setup automatic backup of DNS data
       systemd.services.bind-backup = {
@@ -182,7 +167,6 @@ in {
         whois
         ldns # For drill command
         bind.dnsutils
-        webmin # Makes it easier to get the webmin password
       ];
     }
   ];

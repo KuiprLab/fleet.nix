@@ -34,7 +34,7 @@ in {
       # Open required ports
       networking.firewall = {
         enable = true;
-        allowedTCPPorts = [80 443 1936]; # HTTP, HTTPS, HAProxy stats
+        allowedTCPPorts = [80 443 1936 22]; # HTTP, HTTPS, HAProxy stats
       };
 
       # Additional packages
