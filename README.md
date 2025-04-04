@@ -25,6 +25,11 @@ A multi-flake project for deploying NixOS to LXC containers using Bento. Each co
 
 # Getting Started
 
+## Prerequisites
+
+- A Proxmox Host
+- The NixOS LXC template downloaded (see: https://nixos.wiki/wiki/Proxmox_Linux_Container)
+
 ## Deploying an existing config
 
 1. Run `./scripts/deploy-lxc.sh` to create a new lxc. The script will:
