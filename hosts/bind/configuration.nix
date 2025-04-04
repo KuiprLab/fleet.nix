@@ -68,7 +68,7 @@ in {
   config = lib.mkMerge [
     (commonUtils.mkLxcConfig {
       hostname = "bind";
-      ipAddress = "10.0.0.11"; # Same IP as technitium had
+      ipAddress = "192.168.1.70"; # Same IP as technitium had
     })
     
     
