@@ -5,22 +5,25 @@ A multi-flake project for deploying NixOS to LXC containers using Bento. Each co
 ## Directory Structure
 
 ```
- .
-├──  flake.lock
-├──  flake.nix
-├──  hosts
-│   ├──  haproxy
-│   │   ├──  configuration.nix
-│   │   └──  haproxy.cfg
-│   └──  technitium
-│       └──  configuration.nix
-├── 󰂺 README.md
-├── 󰉼 renovate.json
-├──  scripts
-│   ├──  deploy-lxc.sh
-│   └──  deploy.sh
-└──  utils
-└──  common.nix
+.
+├── flake.lock
+├── flake.nix
+├── hosts
+│   ├── bind
+│   │   └── configuration.nix
+│   └── haproxy
+│       ├── configuration.nix
+│       └── haproxy.cfg
+├── README.md
+├── renovate.json
+├── scripts
+│   ├── configuration.nix
+│   ├── deploy-lxc.sh
+│   └── deploy.sh
+└── utils
+    ├── authorizedKeys
+    ├── auto-update.nix
+    └── common.nix
 ```
 
 # Getting Started
