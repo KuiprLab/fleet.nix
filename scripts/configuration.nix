@@ -1,7 +1,12 @@
-{ config, modulesPath, pkgs, lib, ... }:
 {
-  imports = [ (modulesPath + "/virtualisation/proxmox-lxc.nix") ];
-  nix.settings = { sandbox = false; };  
+  config,
+  modulesPath,
+  pkgs,
+  lib,
+  ...
+}: {
+  imports = [(modulesPath + "/virtualisation/proxmox-lxc.nix")];
+  nix.settings = {sandbox = false;};
   proxmoxLXC = {
     manageNetwork = false;
     privileged = true;
@@ -11,9 +16,9 @@
     enable = true;
     openFirewall = true;
     settings = {
-        PermitRootLogin = "yes";
-        PasswordAuthentication = true;
-        PermitEmptyPasswords = "yes";
+      PermitRootLogin = "yes";
+      PasswordAuthentication = true;
+      PermitEmptyPasswords = "yes";
     };
   };
   system.stateVersion = "24.11";

@@ -1,9 +1,13 @@
 # hosts/bind/configuration.nix
-{ pkgs, lib, modulesPath, config, ... }:
+{
+  pkgs,
+  lib,
+  modulesPath,
+  config,
+  ...
+}: let
+  commonUtils = import ../../utils/common.nix {inherit pkgs;};
 
-let
-  commonUtils = import ../../utils/common.nix { inherit pkgs; };
-  
   # Define zones
   primaryZones = {
     "example.com" = {
@@ -15,7 +19,7 @@ let
       master = true;
     };
   };
-  
+
   # Sample zone file content
   exampleZoneFile = pkgs.writeText "example.com.zone.template" ''
     $TTL 86400
@@ -26,19 +30,19 @@ let
          604800     ; Expire
          86400      ; Minimum TTL
     )
-    
+
     ; Name servers
     @        IN NS     ns1.example.com.
-    
+
     ; A records
     ns1      IN A      10.0.0.11
     www      IN A      192.168.1.100
     app      IN A      192.168.1.101
-    
+
     ; CNAME records
     mail     IN CNAME  app
   '';
-  
+
   # Sample reverse zone file
   reverseZoneFile = pkgs.writeText "192.168.1.rev.template" ''
     $TTL 86400
@@ -49,16 +53,15 @@ let
          604800     ; Expire
          86400      ; Minimum TTL
     )
-    
+
     ; Name servers
     @        IN NS     ns1.example.com.
-    
+
     ; PTR records
     11       IN PTR    ns1.example.com.
     100      IN PTR    www.example.com.
     101      IN PTR    app.example.com.
   '';
-  
 in {
   imports = [
     (modulesPath + "/virtualisation/proxmox-lxc.nix")
@@ -70,67 +73,64 @@ in {
       hostname = "bind";
       ipAddress = "192.168.1.70"; # Same IP as technitium had
     })
-    
-    
+
     {
       proxmoxLXC = {
         manageNetwork = false;
         privileged = false;
       };
-      
+
       # BIND DNS server configuration
       services.bind = {
         enable = true;
-        
+
         # Configure as a caching name server
-        cacheNetworks = [ "192.168.1.0/24" "10.0.0.0/24" "127.0.0.0/8" ];
+        cacheNetworks = ["192.168.1.0/24" "10.0.0.0/24" "127.0.0.0/8"];
         ipv4Only = true;
-        
+
         # Forward queries we can't resolve to external DNS
-        forwarders = [ "1.1.1.1" "8.8.8.8" ];
-        
+        forwarders = ["1.1.1.1" "8.8.8.8"];
+
         # Configure zones
         zones = primaryZones;
-        
+
         # Extra configuration
         extraOptions = ''
           dnssec-validation auto;
           recursion yes;
           allow-recursion { cacheNetworks; };
           listen-on { any; };
-          
+
           # Query logging (useful for debugging)
           querylog yes;
         '';
       };
-      
+
       # Create required zone files from templates
       system.activationScripts.createBindZones = ''
         # Create zone directory if it doesn't exist
         mkdir -p /var/lib/bind
         chown named:named /var/lib/bind
-        
+
         # Create zone files from templates if they don't exist
         if [ ! -f /var/lib/bind/example.com.zone ]; then
           cp ${exampleZoneFile} /var/lib/bind/example.com.zone
           chown named:named /var/lib/bind/example.com.zone
         fi
-        
+
         if [ ! -f /var/lib/bind/192.168.1.rev ]; then
           cp ${reverseZoneFile} /var/lib/bind/192.168.1.rev
           chown named:named /var/lib/bind/192.168.1.rev
         fi
       '';
-      
+
       # Open required firewall ports
       networking.firewall = {
         enable = true;
         allowedUDPPorts = [53];
         allowedTCPPorts = [22];
       };
-      
-      
-      
+
       # Setup automatic backup of DNS data
       systemd.services.bind-backup = {
         description = "BIND DNS Server Backup";
@@ -160,7 +160,7 @@ in {
           Persistent = true;
         };
       };
-      
+
       # Additional monitoring tools
       environment.systemPackages = with pkgs; [
         dig

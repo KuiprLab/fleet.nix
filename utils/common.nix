@@ -1,7 +1,4 @@
-{
-  pkgs,
-  ...
-}: {
+{pkgs, ...}: {
   # Common configuration for LXC containersj
   mkLxcConfig = {
     hostname,
