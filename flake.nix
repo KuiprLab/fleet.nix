@@ -36,7 +36,7 @@
             ./hosts/haproxy/configuration.nix
           ];
       };
-      bind = nixpkgs.lib.nixosSystem {
+      hl-lxc-bind = nixpkgs.lib.nixosSystem {
         inherit system pkgs;
         specialArgs = {inherit self;};
         modules =
@@ -49,7 +49,7 @@
 
     # Deployment configuration using deploy-rs
     deploy.nodes = {
-      lxc-vm-haproxy = {
+      lxc-hl-haproxy = {
         hostname = "192.168.1.69";
         profiles.system = {
           user = "root";
@@ -58,12 +58,12 @@
         };
       };
 
-      bind = {
-        hostname = "10.0.0.11";
+      hl-lxc-bind = {
+        hostname = "192.168.1.70";
         profiles.system = {
           user = "root";
           sshUser = "root";
-          path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.bind;
+          path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.hl-lxc-bind;
         };
       };
     };
