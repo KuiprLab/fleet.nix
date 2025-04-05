@@ -10,8 +10,8 @@
 
   # Define zones
   primaryZones = {
-    "example.com" = {
-      file = "/var/lib/bind/example.com.zone";
+    "hl.kuipr.de" = {
+      file = "/var/lib/bind/hl.kuipr.de.zone";
       master = true;
     };
     "1.168.192.in-addr.arpa" = {
@@ -20,10 +20,10 @@
     };
   };
 
-  # Sample zone file content
-  exampleZoneFile = pkgs.writeText "example.com.zone.template" ''
+  # Zone file content for your actual domain
+  hlKuiprDeZoneFile = pkgs.writeText "hl.kuipr.de.zone.template" ''
     $TTL 86400
-    @ IN SOA ns1.example.com. admin.example.com. (
+    @ IN SOA ns1.hl.kuipr.de. admin.hl.kuipr.de. (
          2023041001 ; Serial
          3600       ; Refresh
          1800       ; Retry
@@ -32,21 +32,24 @@
     )
 
     ; Name servers
-    @        IN NS     ns1.example.com.
+    @        IN NS     ns1.hl.kuipr.de.
+    ns1      IN A      192.168.1.70
 
-    ; A records
-    ns1      IN A      10.0.0.11
-    www      IN A      192.168.1.100
-    app      IN A      192.168.1.101
-
-    ; CNAME records
-    mail     IN CNAME  app
+    ; A records for nginx proxy targets
+    ha       IN A      192.168.1.147
+    xdr      IN A      192.168.1.2
+    pve      IN A      192.168.1.85
+    truenas  IN A      192.168.1.122
+    ui       IN A      192.168.1.155
+    
+    ; NGINX reverse proxy server
+    nginx    IN A      192.168.1.69
   '';
 
-  # Sample reverse zone file
+  # Reverse zone file
   reverseZoneFile = pkgs.writeText "192.168.1.rev.template" ''
     $TTL 86400
-    @ IN SOA ns1.example.com. admin.example.com. (
+    @ IN SOA ns1.hl.kuipr.de. admin.hl.kuipr.de. (
          2023041001 ; Serial
          3600       ; Refresh
          1800       ; Retry
@@ -55,12 +58,16 @@
     )
 
     ; Name servers
-    @        IN NS     ns1.example.com.
+    @        IN NS     ns1.hl.kuipr.de.
 
     ; PTR records
-    11       IN PTR    ns1.example.com.
-    100      IN PTR    www.example.com.
-    101      IN PTR    app.example.com.
+    70       IN PTR    ns1.hl.kuipr.de.
+    69       IN PTR    nginx.hl.kuipr.de.
+    147      IN PTR    ha.hl.kuipr.de.
+    2        IN PTR    xdr.hl.kuipr.de.
+    85       IN PTR    pve.hl.kuipr.de.
+    122      IN PTR    truenas.hl.kuipr.de.
+    155      IN PTR    ui.hl.kuipr.de.
   '';
 in {
   imports = [
@@ -71,7 +78,7 @@ in {
   config = lib.mkMerge [
     (commonUtils.mkLxcConfig {
       hostname = "bind";
-      ipAddress = "192.168.1.70"; # Same IP as technitium had
+      ipAddress = "192.168.1.70";
     })
 
     {
@@ -113,9 +120,9 @@ in {
         chown named:named /var/lib/bind
 
         # Create zone files from templates if they don't exist
-        if [ ! -f /var/lib/bind/example.com.zone ]; then
-          cp ${exampleZoneFile} /var/lib/bind/example.com.zone
-          chown named:named /var/lib/bind/example.com.zone
+        if [ ! -f /var/lib/bind/hl.kuipr.de.zone ]; then
+          cp ${hlKuiprDeZoneFile} /var/lib/bind/hl.kuipr.de.zone
+          chown named:named /var/lib/bind/hl.kuipr.de.zone
         fi
 
         if [ ! -f /var/lib/bind/192.168.1.rev ]; then
@@ -128,7 +135,7 @@ in {
       networking.firewall = {
         enable = true;
         allowedUDPPorts = [53];
-        allowedTCPPorts = [22];
+        allowedTCPPorts = [22 53]; # Added TCP port 53 for DNS zone transfers
       };
 
       # Setup automatic backup of DNS data
