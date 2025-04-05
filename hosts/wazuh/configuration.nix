@@ -1,26 +1,28 @@
-{modulesPath,pkgs,...}:{
-
+{
+  modulesPath,
+  pkgs,
+  ...
+}: {
   imports = [
     (modulesPath + "/virtualisation/proxmox-lxc.nix")
   ];
   programs.wazuh = {
-        enable = true;
+    enable = true;
     username = "daniel";
-        hashedPassword = "$2a$10$CvmkwWOLj0ThTVnKLEM5neZOWS5GZ7cZQBIXvL/fs6keSnU15C/DG";
-    };
+    hashedPassword = "$2a$10$CvmkwWOLj0ThTVnKLEM5neZOWS5GZ7cZQBIXvL/fs6keSnU15C/DG";
+  };
 
-      proxmoxLXC = {
-        manageNetwork = false;
-        privileged = false;
-      };
+  proxmoxLXC = {
+    manageNetwork = false;
+    privileged = false;
+  };
 
-virtualisation.docker = {
-        enable = true;
-        enableOnBoot = true;
-        
-    };
+  virtualisation.docker = {
+    enable = true;
+    enableOnBoot = true;
+  };
 
-      environment.systemPackages = with pkgs; [
-        docker-compose
-    ];
+  environment.systemPackages = with pkgs; [
+    docker-compose
+  ];
 }

@@ -18,7 +18,7 @@
     nixpkgs,
     deploy-rs,
     ...
-  }@inputs: let
+  } @ inputs: let
     system = "x86_64-linux";
     pkgs = import nixpkgs {inherit system;};
 
@@ -55,15 +55,13 @@
           commonModules
           ++ [
             ./hosts/wazuh/configuration.nix
-inputs.wazuh.nixosModules.wazuh
+            inputs.wazuh.nixosModules.wazuh
           ];
       };
-
     };
 
     # Deployment configuration using deploy-rs
     deploy.nodes = {
-
       hl-lxc-nginx = {
         hostname = "192.168.1.69";
         profiles.system = {
@@ -81,7 +79,6 @@ inputs.wazuh.nixosModules.wazuh
           path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.hl-lxc-bind;
         };
       };
-
 
       hl-lxc-wazuh = {
         hostname = "192.168.1.2";

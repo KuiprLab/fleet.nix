@@ -115,15 +115,15 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1740406585,
-        "narHash": "sha256-HuJJfsruNTGAfQstZB0XjrPurfEOtK4CvMirOGi/dLs=",
-        "owner": "anotherhadi",
+        "lastModified": 1743857204,
+        "narHash": "sha256-pkOo1pwYuU84LLnOhGsV4StgjLvWlmOzWQXcfmCzSpc=",
+        "owner": "frostplexx",
         "repo": "wazuh-nix",
-        "rev": "f89e2954616a28c8ab2218c0cb00e52156ea8009",
+        "rev": "a45099c58fd63b48989f339e5a0441688d96aa39",
         "type": "github"
       },
       "original": {
-        "owner": "anotherhadi",
+        "owner": "frostplexx",
         "repo": "wazuh-nix",
         "type": "github"
       }

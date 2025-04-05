@@ -1,4 +1,8 @@
-{pkgs, inputs, ...}: {
+{
+  pkgs,
+  inputs,
+  ...
+}: {
   # Common configuration for LXC containersj
   mkLxcConfig = {
     hostname,
@@ -96,6 +100,5 @@
         enable = false;
       }
     ];
-
   };
 }

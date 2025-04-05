@@ -41,10 +41,10 @@
     pve      IN A      192.168.1.85
     truenas  IN A      192.168.1.122
     ui       IN A      192.168.1.155
-    
+
     ; NGINX reverse proxy server
     nginx    IN A      192.168.1.69
-    
+
     ; Wildcard record - any undefined subdomain will resolve to nginx
     *        IN A      192.168.1.69
   '';
@@ -176,16 +176,16 @@ in {
         enable = true;
         bindURI = "127.0.0.1";
         port = 8053;
-        openFirewall = true;  # Opens port 9119 for Prometheus server
+        openFirewall = true; # Opens port 9119 for Prometheus server
       };
-      
+
       # Enable statistics in BIND for the exporter
       services.bind.extraConfig = ''
         statistics-channels {
           inet 127.0.0.1 port 8053 allow { 127.0.0.1; };
         };
       '';
-      
+
       # Additional monitoring tools
       environment.systemPackages = with pkgs; [
         dig
