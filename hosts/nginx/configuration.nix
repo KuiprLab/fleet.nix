@@ -35,7 +35,7 @@ in {
           enableACME = true;
           forceSSL = true;
           locations."/" = {
-            proxyPass = "http://192.168.1.2:443";
+            proxyPass = "https://192.168.1.2:443";
             proxyWebsockets = true; # needed if you need to use WebSocket
             extraConfig =
               # required when the target is also TLS server with multiple hosts

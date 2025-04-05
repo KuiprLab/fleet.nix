@@ -27,13 +27,13 @@
   in {
     # NixOS configurations for each host
     nixosConfigurations = {
-      hl-lxc-haproxy = nixpkgs.lib.nixosSystem {
+      hl-lxc-nginx = nixpkgs.lib.nixosSystem {
         inherit system pkgs;
         specialArgs = {inherit self;};
         modules =
           commonModules
           ++ [
-            ./hosts/haproxy/configuration.nix
+            ./hosts/nginx/configuration.nix
           ];
       };
       hl-lxc-bind = nixpkgs.lib.nixosSystem {
@@ -49,12 +49,12 @@
 
     # Deployment configuration using deploy-rs
     deploy.nodes = {
-      hl-lxc-haproxy = {
+      hl-lxc-nginx = {
         hostname = "192.168.1.69";
         profiles.system = {
           user = "root";
           sshUser = "root";
-          path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.hl-lxc-haproxy;
+          path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.hl-lxc-nginx;
         };
       };
 
