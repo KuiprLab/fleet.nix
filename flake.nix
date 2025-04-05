@@ -10,7 +10,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    wazuh.url = "github:anotherhadi/wazuh-nix";
+    wazuh.url = "github:frostplexx/wazuh-nix";
   };
 
   outputs = {

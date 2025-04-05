@@ -1,4 +1,4 @@
-{modulesPath,...}:{
+{modulesPath,pkgs,...}:{
 
   imports = [
     (modulesPath + "/virtualisation/proxmox-lxc.nix")
@@ -13,4 +13,14 @@
         manageNetwork = false;
         privileged = false;
       };
+
+virtualisation.docker = {
+        enable = true;
+        enableOnBoot = true;
+        
+    };
+
+      environment.systemPackages = with pkgs; [
+        docker-compose
+    ];
 }

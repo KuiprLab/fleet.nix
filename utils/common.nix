@@ -1,4 +1,4 @@
-{pkgs, ...}: {
+{pkgs, inputs, ...}: {
   # Common configuration for LXC containersj
   mkLxcConfig = {
     hostname,
@@ -10,7 +10,7 @@
         address = "192.168.1.1";
         interface = "eth0";
       };
-      nameservers = ["9.9.9.9"];
+      nameservers = ["192.168.1.70" "9.9.9.9"];
       interfaces.eth0 = {
         ipv4.addresses = [
           {
@@ -77,17 +77,17 @@
       };
     };
 
-    # system.autoUpgrade = {
-    #   enable = true;
-    #   flake = inputs.self.outPath;
-    #   flags = [
-    #     "--update-input"
-    #     "nixpkgs"
-    #     "--print-build-logs"
-    #   ];
-    #   dates = "02:00";
-    #   randomizedDelaySec = "45min";
-    # };
+    system.autoUpgrade = {
+      enable = true;
+      flake = inputs.self.outPath;
+      flags = [
+        "--update-input"
+        "nixpkgs"
+        "--print-build-logs"
+      ];
+      dates = "02:00";
+      randomizedDelaySec = "45min";
+    };
 
     # Workaround for https://github.com/NixOS/nixpkgs/issues/157918
     systemd.mounts = [
@@ -96,5 +96,6 @@
         enable = false;
       }
     ];
+
   };
 }
