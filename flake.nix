@@ -27,7 +27,6 @@
       ./utils/auto-update.nix
     ];
   in {
-
     # NixOS configurations for each host
     nixosConfigurations = {
       hl-lxc-nginx = nixpkgs.lib.nixosSystem {
