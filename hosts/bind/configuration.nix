@@ -41,7 +41,7 @@
     pve      IN A      192.168.1.85
     truenas  IN A      192.168.1.122
     ui       IN A      192.168.1.155
-    
+
     ; NGINX reverse proxy server
     nginx    IN A      192.168.1.69
   '';
