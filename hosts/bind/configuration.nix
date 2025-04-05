@@ -174,7 +174,7 @@ in {
       # Configure Prometheus BIND exporter
       services.prometheus.exporters.bind = {
         enable = true;
-        bindUri = "127.0.0.1";
+        bindURI = "127.0.0.1";
         port = 8053;
         openFirewall = true;  # Opens port 9119 for Prometheus server
       };
