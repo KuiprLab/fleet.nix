@@ -18,7 +18,6 @@
 in {
   imports = [
     (modulesPath + "/virtualisation/proxmox-lxc.nix")
-    ./acme-http-server.nix
   ];
 
   # Use the common configuration for LXC containers
