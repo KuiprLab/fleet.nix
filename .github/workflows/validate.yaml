@@ -92,7 +92,7 @@ jobs:
 
   test-configurations:
     name: Test Nix Configurations
-    needs: [security-check, lint, detect-configs]
+    needs: [security-check, detect-configs]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
