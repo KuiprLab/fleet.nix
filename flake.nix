@@ -24,7 +24,7 @@
 
     # Common modules for all hosts
     commonModules = [
-      (import ./utils/auto-update.nix {inherit inputs;})
+      ./utils/auto-update.nix
     ];
   in {
     # NixOS configurations for each host
