@@ -1,5 +1,5 @@
 # LXC NixOS Fleet
-
+[![Nix Configuration Validation](https://github.com/KuiprLab/fleet.nix/actions/workflows/validate.yaml/badge.svg)](https://github.com/KuiprLab/fleet.nix/actions/workflows/validate.yaml)
 NixOS flake configurations for my LXC containers. Easily deploy new containers and configurations using bash scripts.
 
 ## Directory Structure
