@@ -5,67 +5,84 @@
   config,
   ...
 }: let
-  domains = [
-    "hl.kuipr.de"
-    "dns.hl.kuipr.de"
-    "ha.hl.kuipr.de"
-    "proxy.hl.kuipr.de"
-    "pve.hl.kuipr.de"
-    "truenas.hl.kuipr.de"
-    "xdr.hl.kuipr.de"
-  ];
+  
+  # Define a mapping of domains to their target servers and ports
+  proxyTargets = {
+        "ha.hl.kuipr.de" = { ip = "192.168.1.147"; port = 8123; };
+        "xdr.hl.kuipr.de" = { ip = "192.168.1.2"; port = 443; };
+        "pve.hl.kuipr.de" = { ip = "192.168.1.85"; port = 8006; };
+        "truenas.hl.kuipr.de" = { ip = "192.168.1.122"; port = 443; };
+        "ui.hl.kuipr.de" = {ip = "192.168.1.155"; port = 844; };
+  };
+  
+  # Function to generate NGINX virtual hosts
+  mkVirtualHost = domain: targetConfig: {
+    name = domain;
+    value = {
+      enableACME = true;
+      forceSSL = true;
+      locations."/" = {
+        proxyPass = "https://${targetConfig.ip}:${toString targetConfig.port}";
+        proxyWebsockets = true;
+        extraConfig = ''
+          proxy_ssl_server_name on;
+          proxy_pass_header Authorization;
+        '';
+      };
+    };
+  };
+  
+  # Convert the domain-target mapping to virtual hosts
+  virtualHosts = lib.mapAttrs' 
+    (domain: target: mkVirtualHost domain target) 
+    proxyTargets;
+    
   commonUtils = import ../../utils/common.nix {inherit pkgs;};
 in {
   imports = [
     (modulesPath + "/virtualisation/proxmox-lxc.nix")
   ];
-
+  
   # Use the common configuration for LXC containers
   config = lib.mkMerge [
     (commonUtils.mkLxcConfig {
       hostname = "ha-lxc-haproxy";
       ipAddress = "192.168.1.69";
     })
-
     {
-      services.nginx.enable = true;
-      services.nginx.virtualHosts = {
+      services.nginx = {
+        enable = true;
+        virtualHosts = virtualHosts;  # Use our generated virtualHosts
 
-        "xdr.hl.kuipr.de" = {
-          enableACME = true;
-          forceSSL = true;
-          locations."/" = {
-            proxyPass = "https://192.168.1.2:443";
-            proxyWebsockets = true; # needed if you need to use WebSocket
-            extraConfig =
-              # required when the target is also TLS server with multiple hosts
-              "proxy_ssl_server_name on;"
-              +
-              # required when the server wants to use HTTP Authentication
-              "proxy_pass_header Authorization;";
-          };
-        };
+  statusPage = true;  # Enable /nginx_status endpoint
       };
-
+      
       security.acme = {
         acceptTerms = true;
         defaults.email = "me@dinama.dev";
       };
 
+    # Configure Prometheus NGINX exporter
+      services.prometheus.exporters.nginx = {
+        enable = true;
+        scrapeUri = "http://localhost/nginx_status";
+        openFirewall = true;  # Opens port 9113 for Prometheus server
+      };
+      
+      
       proxmoxLXC = {
         manageNetwork = false;
         privileged = false;
       };
-
+      
       # Open required ports
       networking.firewall = {
         enable = true;
-        allowedTCPPorts = [80 443 1936 22]; # HTTP, HTTPS, HAProxy stats, SSH
+        allowedTCPPorts = [80 443 9113 22]; # HTTP, HTTPS, HAProxy stats, SSH
       };
-
+      
       # Additional packages
       environment.systemPackages = with pkgs; [
-        socat # Useful for HAProxy socket commands
         certbot
         openssl
       ];
