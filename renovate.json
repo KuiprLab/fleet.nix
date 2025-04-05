@@ -11,6 +11,6 @@
   "schedule": [
     "at any time"
   ],
-  "automerge": false,
+  "automerge": true,
   "automergeType": "pr"
 }
