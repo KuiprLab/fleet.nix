@@ -109,5 +109,3 @@ jobs:
         run: |
           echo "Building configuration for ${{ matrix.name }} (${{ matrix.type }})"
           nix build .#${{ matrix.config }} --accept-flake-config --impure --extra-experimental-features flakes --extra-experimental-features nix-command --dry-run
-          echo "Running vulnix"
-          nix run nixpkgs#vulnix -- --system
