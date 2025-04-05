@@ -9,6 +9,8 @@
       url = "github:serokell/deploy-rs";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    wazuh.url = "github:anotherhadi/wazuh-nix";
   };
 
   outputs = {
@@ -16,7 +18,7 @@
     nixpkgs,
     deploy-rs,
     ...
-  }: let
+  }@inputs: let
     system = "x86_64-linux";
     pkgs = import nixpkgs {inherit system;};
 
@@ -45,10 +47,23 @@
             ./hosts/bind/configuration.nix
           ];
       };
+
+      hl-lxc-wazuh = nixpkgs.lib.nixosSystem {
+        inherit system pkgs;
+        specialArgs = {inherit self;};
+        modules =
+          commonModules
+          ++ [
+            ./hosts/wazuh/configuration.nix
+inputs.wazuh.nixosModules.wazuh
+          ];
+      };
+
     };
 
     # Deployment configuration using deploy-rs
     deploy.nodes = {
+
       hl-lxc-nginx = {
         hostname = "192.168.1.69";
         profiles.system = {
@@ -64,6 +79,16 @@
           user = "root";
           sshUser = "root";
           path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.hl-lxc-bind;
+        };
+      };
+
+
+      hl-lxc-wazuh = {
+        hostname = "192.168.1.2";
+        profiles.system = {
+          user = "root";
+          sshUser = "root";
+          path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.hl-lxc-wazuh;
         };
       };
     };

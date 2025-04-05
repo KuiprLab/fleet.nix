@@ -54,10 +54,27 @@
         "type": "github"
       }
     },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1739580444,
+        "narHash": "sha256-+/bSz4EAVbqz8/HsIGLroF8aNaO8bLRL7WfACN+24g4=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "8bb37161a0488b89830168b81c48aed11569cb93",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "deploy-rs": "deploy-rs",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "wazuh": "wazuh"
       }
     },
     "systems": {
@@ -90,6 +107,24 @@
       "original": {
         "owner": "numtide",
         "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "wazuh": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_2"
+      },
+      "locked": {
+        "lastModified": 1740406585,
+        "narHash": "sha256-HuJJfsruNTGAfQstZB0XjrPurfEOtK4CvMirOGi/dLs=",
+        "owner": "anotherhadi",
+        "repo": "wazuh-nix",
+        "rev": "f89e2954616a28c8ab2218c0cb00e52156ea8009",
+        "type": "github"
+      },
+      "original": {
+        "owner": "anotherhadi",
+        "repo": "wazuh-nix",
         "type": "github"
       }
     }
