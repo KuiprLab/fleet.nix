@@ -10,6 +10,7 @@ HOST=$(echo "$CONFIGS" | fzf --prompt "Select config to deploy: ")
 echo "Deploying $HOST..."
 if [ -n "$HOST" ]; then
   echo "Deploying configuration: $HOST"
+  nix fmt .
   git add . || true
   git commit -m "chore: automatic commit before deployment" || true
   git push || true
