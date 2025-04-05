@@ -1,28 +1,40 @@
 {
   modulesPath,
   pkgs,
+  lib,
   ...
-}: {
+}: let
+  commonUtils = import ../../utils/common.nix {inherit pkgs;};
+in {
   imports = [
     (modulesPath + "/virtualisation/proxmox-lxc.nix")
   ];
-  programs.wazuh = {
-    enable = true;
-    username = "daniel";
-    hashedPassword = "$2a$10$CvmkwWOLj0ThTVnKLEM5neZOWS5GZ7cZQBIXvL/fs6keSnU15C/DG";
-  };
 
-  proxmoxLXC = {
-    manageNetwork = false;
-    privileged = false;
-  };
+  config = lib.mkMerge [
+    (commonUtils.mkLxcConfig {
+      hostname = "bind";
+      ipAddress = "192.168.1.70";
+    })
+    {
+      programs.wazuh = {
+        enable = true;
+        username = "daniel";
+        hashedPassword = "$2a$10$CvmkwWOLj0ThTVnKLEM5neZOWS5GZ7cZQBIXvL/fs6keSnU15C/DG";
+      };
 
-  virtualisation.docker = {
-    enable = true;
-    enableOnBoot = true;
-  };
+      proxmoxLXC = {
+        manageNetwork = false;
+        privileged = false;
+      };
 
-  environment.systemPackages = with pkgs; [
-    docker-compose
+      virtualisation.docker = {
+        enable = true;
+        enableOnBoot = true;
+      };
+
+      environment.systemPackages = with pkgs; [
+        docker-compose
+      ];
+    }
   ];
 }

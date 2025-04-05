@@ -1,9 +1,8 @@
 # hosts/bind/configuration.nix
 {
-  pkgs,
   lib,
   modulesPath,
-  config,
+  pkgs,
   ...
 }: let
   commonUtils = import ../../utils/common.nix {inherit pkgs;};
