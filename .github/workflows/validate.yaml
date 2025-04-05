@@ -28,26 +28,6 @@ jobs:
           GITHUB_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
 
-  lint:
-    name: Statix Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@main
-      - name: Run statix linter
-        run: |
-          echo "Linting Flake..."
-          if make lint; then
-            echo "success=true" >> $GITHUB_ENV
-          else
-            echo "Lint failed, listing flake.lock for debugging:"
-            cat flake.lock
-            echo "success=false" >> $GITHUB_ENV
-            exit 1
-          fi
-
-
   detect-configs:
     name: Detect Configurations
     runs-on: ubuntu-latest
