@@ -68,7 +68,6 @@ in {
       services.nginx = {
         enable = true;
         virtualHosts = virtualHosts; # Use our generated virtualHosts
-
         statusPage = true; # Enable /nginx_status endpoint
       };
 

@@ -41,7 +41,7 @@
     pve      IN A      192.168.1.85
     truenas  IN A      192.168.1.122
     ui       IN A      192.168.1.155
-
+    
     ; NGINX reverse proxy server
     nginx    IN A      192.168.1.69
   '';
@@ -135,7 +135,7 @@ in {
       networking.firewall = {
         enable = true;
         allowedUDPPorts = [53];
-        allowedTCPPorts = [22 53]; # Added TCP port 53 for DNS zone transfers
+        allowedTCPPorts = [22 53 9119]; # Added 9119 for Prometheus BIND exporter
       };
 
       # Setup automatic backup of DNS data
@@ -168,6 +168,21 @@ in {
         };
       };
 
+      # Configure Prometheus BIND exporter
+      services.prometheus.exporters.bind = {
+        enable = true;
+        bindHost = "127.0.0.1";
+        bindPort = 8053;
+        openFirewall = true;  # Opens port 9119 for Prometheus server
+      };
+      
+      # Enable statistics in BIND for the exporter
+      services.bind.extraConfig = ''
+        statistics-channels {
+          inet 127.0.0.1 port 8053 allow { 127.0.0.1; };
+        };
+      '';
+      
       # Additional monitoring tools
       environment.systemPackages = with pkgs; [
         dig
