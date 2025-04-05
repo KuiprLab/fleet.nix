@@ -44,6 +44,9 @@
     
     ; NGINX reverse proxy server
     nginx    IN A      192.168.1.69
+    
+    ; Wildcard record - any undefined subdomain will resolve to nginx
+    *        IN A      192.168.1.69
   '';
 
   # Reverse zone file
