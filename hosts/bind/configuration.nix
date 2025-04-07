@@ -79,7 +79,7 @@ in {
   # Use the common configuration for LXC containers
   config = lib.mkMerge [
     (commonUtils.mkLxcConfig {
-      hostname = "bind";
+      hostname = "hl-lxc-bind";
       ipAddress = "192.168.1.70";
     })
 

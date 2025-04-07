@@ -61,7 +61,7 @@ in {
   # Use the common configuration for LXC containers
   config = lib.mkMerge [
     (commonUtils.mkLxcConfig {
-      hostname = "ha-lxc-haproxy";
+      hostname = "hl-lxc-haproxy";
       ipAddress = "192.168.1.69";
     })
     {

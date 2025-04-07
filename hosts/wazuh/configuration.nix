@@ -13,11 +13,12 @@ in {
 
   config = lib.mkMerge [
     (commonUtils.mkLxcConfig {
-      hostname = "bind";
-      ipAddress = "192.168.1.70";
+      hostname = "hl-lxc-wazuh";
+      ipAddress = "192.168.1.2";
     })
     {
 
+  programs.wazuh.enable = true;
       proxmoxLXC = {
         manageNetwork = false;
         privileged = false;

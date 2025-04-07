@@ -9,6 +9,9 @@
       url = "github:serokell/deploy-rs";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+
+programs.wazuh.enable = true;
   };
 
   outputs = {
@@ -53,6 +56,7 @@
           commonModules
           ++ [
             ./hosts/wazuh/configuration.nix
+inputs.wazuh.nixosModules.wazuh
           ];
       };
     };
