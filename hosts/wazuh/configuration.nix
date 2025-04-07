@@ -8,6 +8,7 @@
 in {
   imports = [
     (modulesPath + "/virtualisation/proxmox-lxc.nix")
+        ./wazuh.nix
   ];
 
   config = lib.mkMerge [
@@ -16,11 +17,6 @@ in {
       ipAddress = "192.168.1.70";
     })
     {
-      programs.wazuh = {
-        enable = true;
-        username = "daniel";
-        hashedPassword = "$2a$10$CvmkwWOLj0ThTVnKLEM5neZOWS5GZ7cZQBIXvL/fs6keSnU15C/DG";
-      };
 
       proxmoxLXC = {
         manageNetwork = false;
