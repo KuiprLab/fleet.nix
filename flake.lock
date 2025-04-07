@@ -54,27 +54,10 @@
         "type": "github"
       }
     },
-    "nixpkgs_2": {
-      "locked": {
-        "lastModified": 1739580444,
-        "narHash": "sha256-+/bSz4EAVbqz8/HsIGLroF8aNaO8bLRL7WfACN+24g4=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "8bb37161a0488b89830168b81c48aed11569cb93",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "root": {
       "inputs": {
         "deploy-rs": "deploy-rs",
-        "nixpkgs": "nixpkgs",
-        "wazuh": "wazuh"
+        "nixpkgs": "nixpkgs"
       }
     },
     "systems": {
@@ -107,24 +90,6 @@
       "original": {
         "owner": "numtide",
         "repo": "flake-utils",
-        "type": "github"
-      }
-    },
-    "wazuh": {
-      "inputs": {
-        "nixpkgs": "nixpkgs_2"
-      },
-      "locked": {
-        "lastModified": 1743857204,
-        "narHash": "sha256-pkOo1pwYuU84LLnOhGsV4StgjLvWlmOzWQXcfmCzSpc=",
-        "owner": "frostplexx",
-        "repo": "wazuh-nix",
-        "rev": "a45099c58fd63b48989f339e5a0441688d96aa39",
-        "type": "github"
-      },
-      "original": {
-        "owner": "frostplexx",
-        "repo": "wazuh-nix",
         "type": "github"
       }
     }
