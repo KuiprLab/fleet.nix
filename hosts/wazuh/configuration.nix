@@ -8,7 +8,6 @@
 in {
   imports = [
     (modulesPath + "/virtualisation/proxmox-lxc.nix")
-        ./wazuh.nix
   ];
 
   config = lib.mkMerge [
@@ -18,7 +17,8 @@ in {
     })
     {
 
-  programs.wazuh.enable = true;
+      programs.wazuh.enable = true;
+
       proxmoxLXC = {
         manageNetwork = false;
         privileged = false;
