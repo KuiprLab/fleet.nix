@@ -11,7 +11,7 @@
     };
 
 
-programs.wazuh.enable = true;
+    wazuh.url = "github:anotherhadi/wazuh-nix";
   };
 
   outputs = {
@@ -56,7 +56,7 @@ programs.wazuh.enable = true;
           commonModules
           ++ [
             ./hosts/wazuh/configuration.nix
-inputs.wazuh.nixosModules.wazuh
+            inputs.wazuh.nixosModules.wazuh
           ];
       };
     };
