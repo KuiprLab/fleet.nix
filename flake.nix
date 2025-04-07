@@ -10,8 +10,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-
-    wazuh.url = "github:anotherhadi/wazuh-nix";
   };
 
   outputs = {
@@ -49,16 +47,6 @@
           ];
       };
 
-      hl-lxc-wazuh = nixpkgs.lib.nixosSystem {
-        inherit system pkgs;
-        specialArgs = {inherit self;};
-        modules =
-          commonModules
-          ++ [
-            ./hosts/wazuh/configuration.nix
-            inputs.wazuh.nixosModules.wazuh
-          ];
-      };
     };
 
     # Deployment configuration using deploy-rs
@@ -81,14 +69,6 @@
         };
       };
 
-      hl-lxc-wazuh = {
-        hostname = "192.168.1.2";
-        profiles.system = {
-          user = "root";
-          sshUser = "root";
-          path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.hl-lxc-wazuh;
-        };
-      };
     };
 
     # Check deployments
