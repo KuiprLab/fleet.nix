@@ -59,17 +59,17 @@
     };
 
     nix = {
-gc = {
-  automatic = true;
-  dates = "weekly";
-  options = "--delete-older-than 7d";
-};
-                  optimise = {
-automatic = true;
-dates = [ "03:45" ]; # Optional; allows customizing optimisation schedule
-                };
+      gc = {
+        automatic = true;
+        dates = "weekly";
+        options = "--delete-older-than 7d";
+      };
+      optimise = {
+        automatic = true;
+        dates = ["03:45"]; # Optional; allows customizing optimisation schedule
+      };
       settings = {
-                    auto-optimise-store = true;
+        auto-optimise-store = true;
         sandbox = false;
         # Add Cachix binary caches (replace "your-cache" with your Cachix cache name)
         trusted-binary-caches = [
