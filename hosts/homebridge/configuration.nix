@@ -10,7 +10,7 @@
 in {
   imports = [
     (modulesPath + "/virtualisation/proxmox-lxc.nix")
-    ./my-declared-folders.nix
+    ../../utils/my-declared-folders.nix
   ];
 
   config = lib.mkMerge [
