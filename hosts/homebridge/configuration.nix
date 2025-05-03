@@ -38,7 +38,7 @@ in {
 
 
       networking.firewall = {
-        enable = true;
+        enable = false;
         allowedTCPPorts = [8581 22]; # HTTP, HTTPS, HAProxy stats, SSH
       };
 
