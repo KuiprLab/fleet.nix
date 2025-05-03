@@ -27,6 +27,11 @@
       ip = "192.168.1.155";
       port = 844;
     };
+
+    "hb.hl.kuipr.de" = {
+      ip = "192.168.1.10";
+      port = 8581;
+    };
   };
 
   # Function to generate NGINX virtual hosts
