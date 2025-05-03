@@ -39,7 +39,7 @@ in {
 
       networking.firewall = {
         enable = true;
-        allowedTCPPorts = [80 443 22]; # HTTP, HTTPS, HAProxy stats, SSH
+        allowedTCPPorts = [8581 22]; # HTTP, HTTPS, HAProxy stats, SSH
       };
 
       # Enable container name DNS for all Podman networks.
