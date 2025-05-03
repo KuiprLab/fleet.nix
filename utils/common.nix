@@ -1,4 +1,7 @@
 {pkgs, ...}: {
+  imports = [
+    ./my-declared-folders.nix
+  ];
   # Common configuration for LXC containersj
   mkLxcConfig = {
     hostname,

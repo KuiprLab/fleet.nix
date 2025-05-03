@@ -9,7 +9,6 @@
       url = "github:serokell/deploy-rs";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
   };
 
   outputs = {
@@ -46,7 +45,15 @@
             ./hosts/bind/configuration.nix
           ];
       };
-
+      hl-lxc-homebridge = nixpkgs.lib.nixosSystem {
+        inherit system pkgs;
+        specialArgs = {inherit self;};
+        modules =
+          commonModules
+          ++ [
+            ./hosts/homebridge/configuration.nix
+          ];
+      };
     };
 
     # Deployment configuration using deploy-rs
@@ -69,6 +76,14 @@
         };
       };
 
+      hl-lxc-homebridge = {
+        hostname = "192.168.1.10";
+        profiles.system = {
+          user = "root";
+          sshUser = "root";
+          path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.hl-lxc-homebridge;
+        };
+      };
     };
 
     # Check deployments
