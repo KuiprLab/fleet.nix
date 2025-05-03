@@ -7,10 +7,6 @@
 }: let
   # Define a mapping of domains to their target servers and ports
   proxyTargets = {
-    "ha.hl.kuipr.de" = {
-      ip = "192.168.1.147";
-      port = 8123;
-    };
     "xdr.hl.kuipr.de" = {
       ip = "192.168.1.2";
       port = 443;
