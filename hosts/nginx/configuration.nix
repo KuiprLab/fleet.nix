@@ -2,7 +2,6 @@
   pkgs,
   lib,
   modulesPath,
-  config,
   ...
 }: let
   # Define a mapping of domains to their target servers and ports
@@ -10,23 +9,28 @@
     "xdr.hl.kuipr.de" = {
       ip = "192.168.1.2";
       port = 443;
+      isSSL = true;
     };
     "pve.hl.kuipr.de" = {
       ip = "192.168.1.85";
       port = 8006;
+      isSSL = true;
     };
     "truenas.hl.kuipr.de" = {
       ip = "192.168.1.122";
       port = 443;
+      isSSL = false;
     };
     "ui.hl.kuipr.de" = {
       ip = "192.168.1.155";
       port = 844;
+      isSSL = true;
     };
 
     "hb.hl.kuipr.de" = {
       ip = "192.168.1.10";
       port = 8581;
+      isSSL = false;
     };
   };
 
@@ -37,7 +41,7 @@
       enableACME = true;
       forceSSL = true;
       locations."/" = {
-        proxyPass = "https://${targetConfig.ip}:${toString targetConfig.port}";
+        proxyPass = "http${if targetConfig.isSSL then "s" else ""}://${targetConfig.ip}:${toString targetConfig.port}";
         proxyWebsockets = true;
         extraConfig = ''
           proxy_ssl_server_name on;
