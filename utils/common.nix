@@ -72,6 +72,7 @@
         auto-optimise-store = true;
         sandbox = false;
         # Add Cachix binary caches (replace "your-cache" with your Cachix cache name)
+    experimental-features = [ "nix-command" "flakes" ]; # Enable nix command & flakes
         trusted-binary-caches = [
           "https://cache.nixos.org/"
         ];
