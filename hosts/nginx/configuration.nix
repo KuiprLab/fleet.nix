@@ -38,34 +38,61 @@
   mkAnubisInstance = domain: targetConfig: {
     name = lib.replaceStrings ["."] ["-"] domain;
     value = {
+      enable = true;
       settings = {
+        # Configure target service
         TARGET = "http${if targetConfig.isSSL then "s" else ""}://${targetConfig.ip}:${toString targetConfig.port}";
+        
         # Use Unix domain sockets for communication between Nginx and Anubis
-        BIND = "/run/anubis/${lib.replaceStrings ["."] ["-"] domain}.sock";
+        # These are automatically configured with proper permissions
+        BIND = "/run/anubis/anubis-${lib.replaceStrings ["."] ["-"] domain}.sock";
         BIND_NETWORK = "unix";
-        # Expose metrics on a unique port
-        METRICS_BIND = "127.0.0.1:${toString (9200 + lib.attrsets.attrValues (lib.mapAttrsToList (name: _: if name == domain then 1 else 0) proxyTargets))}";
+        
+        # Expose metrics on a unique port for this service
+        METRICS_BIND = "127.0.0.1:${toString (9200 + lib.attrsets.elemAt (lib.attrNames proxyTargets) (lib.attrsets.attrValues (lib.mapAttrsToList (name: _: if name == domain then 1 else 0) proxyTargets)))}";
         METRICS_BIND_NETWORK = "tcp";
-        DIFFICULTY = 3; # Adjust the challenge difficulty as needed
+        
+        # Set challenge difficulty
+        DIFFICULTY = 3;
+        
+        # Add service-specific settings here if needed
+        SERVE_ROBOTS_TXT = true;
       };
-      # Customize bot policy if needed
+      
+      # Customize bot policy
       botPolicy = {
+        # Basic settings
         dnsbl = true;
+        country_block = "off";
+        
+        # Bot definitions
         bots = {
           good = [
-          ];
-          bad = [
             "GoogleBot"
             "BingBot"
             "DuckDuckBot"
             "YandexBot"
+            "BaiduSpider"
+            "PingdomBot"
+            "SlackBot"
+          ];
+          bad = [
             "OpenAI"
             "Anthropic"
             "Claude"
             "GPTBot"
             "CCBot"
             "FacebookBot"
+            "CommonCrawl"
+            "AhrefsBot"
           ];
+        };
+        
+        # Challenge tuning
+        challenge = {
+          enabled = true;
+          max_age = 3600;
+          threshold = 60;
         };
       };
     };
@@ -82,7 +109,7 @@
       forceSSL = true;
       locations."/" = {
         # Proxy to the Anubis instance instead of directly to the target
-        proxyPass = "http://unix:${config.services.anubis.instances.${lib.replaceStrings ["."] ["-"] domain}.settings.BIND}";
+        proxyPass = "http://unix:/run/anubis/anubis-${lib.replaceStrings ["."] ["-"] domain}.sock";
         proxyWebsockets = true;
         extraConfig = ''
           proxy_ssl_server_name on;
@@ -110,18 +137,22 @@ in {
     {
       # Configure Anubis with our generated instances
       services.anubis = {
-        enable = true;
         # Default options for all Anubis instances
         defaultOptions = {
           settings = {
+            # Global Anubis settings
             LOG_LEVEL = "info";
-            COUNTRY_BLOCK = "off"; # Optional: You can enable country blocking if needed
+            SOCKET_MODE = "0770";  # Allow access to sockets by group
           };
+          # Extra command-line flags if needed
+          extraFlags = [];
         };
+        
+        # Apply all our Anubis instances
         instances = anubisInstances;
       };
 
-      # Add nginx user to the anubis group to access the UNIX sockets
+      # Add nginx user to the anubis group so it can access the UNIX sockets
       users.users.nginx.extraGroups = [ config.users.groups.anubis.name ];
 
       services.nginx = {
@@ -142,13 +173,6 @@ in {
         openFirewall = true; # Opens port 9113 for Prometheus server
       };
 
-      # Configure Prometheus Anubis exporter for metrics collection from all instances
-      services.prometheus.exporters.anubis = {
-        enable = true;
-        port = 9114;
-        openFirewall = true;
-      };
-
       proxmoxLXC = {
         manageNetwork = false;
         privileged = false;
@@ -161,8 +185,11 @@ in {
           80   # HTTP
           443  # HTTPS
           9113 # NGINX metrics
-          9114 # Anubis metrics
           22   # SSH
+        ];
+        # We're also opening the Anubis metrics ports in the 9200+ range
+        allowedTCPPortRanges = [
+          { from = 9200; to = 9205; } # Anubis metrics ports
         ];
       };
 
