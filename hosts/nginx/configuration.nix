@@ -20,7 +20,7 @@
     "truenas.hl.kuipr.de" = {
       ip = "192.168.1.122";
       port = 443;
-      isSSL = false;
+      isSSL = true;
     };
     "ui.hl.kuipr.de" = {
       ip = "192.168.1.155";
