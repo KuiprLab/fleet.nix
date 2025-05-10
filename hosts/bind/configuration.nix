@@ -34,13 +34,6 @@
     @        IN NS     ns1.hl.kuipr.de.
     ns1      IN A      192.168.1.70
 
-    ; A records for nginx proxy targets
-    ha       IN A      192.168.1.147
-    xdr      IN A      192.168.1.2
-    pve      IN A      192.168.1.85
-    truenas  IN A      192.168.1.122
-    ui       IN A      192.168.1.155
-
     ; NGINX reverse proxy server
     nginx    IN A      192.168.1.69
 
