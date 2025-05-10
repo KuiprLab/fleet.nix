@@ -40,6 +40,7 @@
     value = {
       settings = {
         TARGET = "http${if targetConfig.isSSL then "s" else ""}://${targetConfig.ip}:${toString targetConfig.port}";
+        USE_REMOTE_ADDRESS = true;
       };
     };
   };
