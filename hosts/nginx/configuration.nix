@@ -40,17 +40,9 @@
     value = {
       settings = {
         TARGET = "http${if targetConfig.isSSL then "s" else ""}://${targetConfig.ip}:${toString targetConfig.port}";
-        # Increase timeouts for admin interfaces
-        METRICS_BIND_NETWORK = "tcp";
-        METRICS_BIND = "127.0.0.1:0";  # Random high port for metrics
-        # Skip SSL verification for all backends with self-signed certificates
-        SKIP_VERIFY = if targetConfig.isSSL then true else null;
+        USE_REMOTE_ADDRESS = true;
+        TARGET_INSECURE_SKIP_VERIFY = true;
       };
-      # Special handling for Proxmox and admin interfaces
-      extraFlags = lib.optionals (domain == "pve.hl.kuipr.de" || domain == "truenas.hl.kuipr.de") [
-        "-timeout 90s"
-        "-strict-cookies=false"  # Less strict cookie handling for admin interfaces
-      ];
     };
   };
   
@@ -73,16 +65,6 @@
           # These settings ensure proper forwarding through Anubis
           proxy_ssl_server_name on;
           proxy_pass_header Authorization;
-          proxy_ssl_verify off;  # Don't verify backend SSL certificates
-          proxy_set_header Host $host;
-          proxy_set_header X-Real-IP $remote_addr;
-          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-          proxy_set_header X-Forwarded-Proto $scheme;
-          
-          # Increase timeouts for Proxmox and other admin UIs
-          proxy_connect_timeout 60s;
-          proxy_send_timeout 60s;
-          proxy_read_timeout 60s;
         '';
       };
     };
@@ -112,15 +94,9 @@ in {
         defaultOptions = {
           # Default configuration for all anubis instances
           settings = {
-            DIFFICULTY = 3;  # Lower difficulty to reduce friction for legitimate users
+            DIFFICULTY = 4;  # Default challenge difficulty
             SERVE_ROBOTS_TXT = true;  # Serve default robots.txt that blocks AI bots
-            SKIP_VERIFY = true;  # Skip SSL verification for self-signed certificates by default
           };
-          # Add flags to better handle proxmox and other admin interfaces
-          extraFlags = [
-            "-timeout 60s"  # Increase timeout for admin interfaces
-            "-insecure-skip-verify"  # Skip TLS certificate verification (command line flag)
-          ];
         };
         instances = anubisInstances;
       };
