@@ -28,39 +28,45 @@
     };
   };
 
-  # Generate anubis instances for each domain
-  mkAnubisInstance = domain: targetConfig: if targetConfig.isSSL then null else {
+# Filter only non-SSL targets for Anubis
+anubisTargets = lib.filterAttrs (_: v: v.isSSL == false) proxyTargets;
+
+# Create Anubis instances only for those
+anubisInstances = lib.mapAttrs'
+  (domain: target: {
     name = lib.strings.sanitizeDerivationName domain;
     value = {
       settings = {
-        TARGET = "http${if targetConfig.isSSL then "s" else ""}://${targetConfig.ip}:${toString targetConfig.port}";
+        TARGET = "http://${target.ip}:${toString target.port}";
         USE_REMOTE_ADDRESS = true;
         TARGET_INSECURE_SKIP_VERIFY = true;
       };
     };
-  };
-
-  # Create anubis instances for each domain, excluding those with isSSL = true
-  anubisInstances = lib.filterAttrs (domain: target: target.isSSL == false) proxyTargets;
+  })
+  anubisTargets;
 
   # Function to generate NGINX virtual hosts with Anubis protection
-  mkVirtualHost = domain: targetConfig: {
-    name = domain;
-    value = {
-      enableACME = true;
-      forceSSL = true;
-      locations."/" = {
-        # Connect to the Anubis instance for this domain via Unix socket
-        proxyPass = "http://unix:${config.services.anubis.instances.${lib.strings.sanitizeDerivationName domain}.settings.BIND}";
-        proxyWebsockets = true;
-        extraConfig = ''
-          # These settings ensure proper forwarding through Anubis
-          proxy_ssl_server_name on;
-          proxy_pass_header Authorization;
-        '';
-      };
+mkVirtualHost = domain: targetConfig: {
+  name = domain;
+  value = {
+    enableACME = true;
+    forceSSL = true;
+    locations."/" = let
+      sanitizedName = lib.strings.sanitizeDerivationName domain;
+      proxyPassUrl = if targetConfig.isSSL then
+        "https://${targetConfig.ip}:${toString targetConfig.port}"
+      else
+        "http://unix:${config.services.anubis.instances.${sanitizedName}.settings.BIND}";
+    in {
+      proxyPass = proxyPassUrl;
+      proxyWebsockets = true;
+      extraConfig = ''
+        proxy_ssl_server_name on;
+        proxy_pass_header Authorization;
+      '';
     };
   };
+};
 
   # Convert the domain-target mapping to virtual hosts
   virtualHosts = lib.mapAttrs' (domain: target: mkVirtualHost domain target) proxyTargets;
