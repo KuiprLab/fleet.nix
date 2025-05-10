@@ -1,3 +1,6 @@
+alias d := deploy
+alias u := update
+
 default:
     just --list
 

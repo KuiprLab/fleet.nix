@@ -49,7 +49,7 @@
     # Security hardening
     security = {
       sudo.wheelNeedsPassword = false; # For automated deployments
-      auditd.enable = true;
+      auditd.enable = false;
     };
 
     # Create a default user with SSH access
