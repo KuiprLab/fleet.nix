@@ -1,87 +1,95 @@
-{
-  pkgs,
-  lib,
-  modulesPath,
-  config,
-  ...
-}: let
-  # Define a mapping of domains to their target servers and ports
-  proxyTargets = {
-    "xdr.hl.kuipr.de" = {
-      ip = "192.168.1.2";
-      port = 443;
-      isSSL = true;
-    };
-    "pve.hl.kuipr.de" = {
-      ip = "192.168.1.85";
-      port = 8006;
-      isSSL = true;
-    };
-    "truenas.hl.kuipr.de" = {
-      ip = "192.168.1.122";
-      port = 443;
-      isSSL = true;
-    };
-    "ui.hl.kuipr.de" = {
-      ip = "192.168.1.155";
-      port = 844;
-      isSSL = true;
-    };
-    "hb.hl.kuipr.de" = {
-      ip = "192.168.1.10";
-      port = 8581;
-      isSSL = false;
-    };
+{   pkgs,   lib,   modulesPath,   config,   ... }: let   
+  # Define a mapping of domains to their target servers and ports   
+  proxyTargets = {     
+    "xdr.hl.kuipr.de" = {       
+      ip = "192.168.1.2";       
+      port = 443;       
+      isSSL = true;     
+    };     
+    "pve.hl.kuipr.de" = {       
+      ip = "192.168.1.85";       
+      port = 8006;       
+      isSSL = true;     
+    };     
+    "truenas.hl.kuipr.de" = {       
+      ip = "192.168.1.122";       
+      port = 443;       
+      isSSL = true;     
+    };     
+    "ui.hl.kuipr.de" = {       
+      ip = "192.168.1.155";       
+      port = 844;       
+      isSSL = true;     
+    };     
+    "hb.hl.kuipr.de" = {       
+      ip = "192.168.1.10";       
+      port = 8581;       
+      isSSL = false;     
+    };   
   };
-  
-  # Generate anubis instances for each domain
-  mkAnubisInstance = domain: targetConfig: {
-    name = lib.strings.sanitizeDerivationName domain;
-    value = {
-      settings = {
-        TARGET = "http${if targetConfig.isSSL then "s" else ""}://${targetConfig.ip}:${toString targetConfig.port}";
-        USE_REMOTE_ADDRESS = true;
-        TARGET_INSECURE_SKIP_VERIFY = true;
+
+  # Generate anubis instances only for domains where isSSL is false
+  mkAnubisInstance = domain: targetConfig: 
+    lib.optionalAttrs (!targetConfig.isSSL) {
+      name = lib.strings.sanitizeDerivationName domain;
+      value = {
+        settings = {
+          TARGET = "http${if targetConfig.isSSL then "s" else ""}://${targetConfig.ip}:${toString targetConfig.port}";
+          USE_REMOTE_ADDRESS = true;
+          TARGET_INSECURE_SKIP_VERIFY = true;
+        };
       };
     };
-  };
-  
-  # Create anubis instances for each domain
-  anubisInstances = lib.mapAttrs' 
-    (domain: target: mkAnubisInstance domain target)
+
+  # Create anubis instances only for domains where isSSL is false
+  anubisInstances = lib.foldlAttrs 
+    (acc: domain: target: 
+      acc // (mkAnubisInstance domain target)
+    ) 
+    {} 
     proxyTargets;
-    
-  # Function to generate NGINX virtual hosts with Anubis protection
+
+  # Function to generate NGINX virtual hosts with or without Anubis protection
   mkVirtualHost = domain: targetConfig: {
     name = domain;
     value = {
       enableACME = true;
       forceSSL = true;
-      locations."/" = {
-        # Connect to the Anubis instance for this domain via Unix socket
-        proxyPass = "http://unix:${config.services.anubis.instances.${lib.strings.sanitizeDerivationName domain}.settings.BIND}";
-        proxyWebsockets = true;
-        extraConfig = ''
-          # These settings ensure proper forwarding through Anubis
-          proxy_ssl_server_name on;
-          proxy_pass_header Authorization;
-        '';
-      };
+      locations."/" = if targetConfig.isSSL 
+        then {
+          # Direct proxy to the target for SSL services (bypass Anubis)
+          proxyPass = "http${if targetConfig.isSSL then "s" else ""}://${targetConfig.ip}:${toString targetConfig.port}";
+          proxyWebsockets = true;
+          extraConfig = ''
+            proxy_ssl_server_name on;
+            proxy_pass_header Authorization;
+            proxy_ssl_verify off;  # Skip SSL verification for internal services
+          '';
+        } 
+        else {
+          # Connect to the Anubis instance for non-SSL services via Unix socket
+          proxyPass = "http://unix:${config.services.anubis.instances.${lib.strings.sanitizeDerivationName domain}.settings.BIND}";
+          proxyWebsockets = true;
+          extraConfig = ''
+            # These settings ensure proper forwarding through Anubis
+            proxy_ssl_server_name on;
+            proxy_pass_header Authorization;
+          '';
+        };
     };
   };
-  
+
   # Convert the domain-target mapping to virtual hosts
-  virtualHosts =
-    lib.mapAttrs'
+  virtualHosts = lib.mapAttrs'
     (domain: target: mkVirtualHost domain target)
     proxyTargets;
-    
+
   commonUtils = import ../../utils/common.nix {inherit pkgs;};
 in {
   imports = [
     (modulesPath + "/virtualisation/proxmox-lxc.nix")
   ];
-  
+
   # Use the common configuration for LXC containers
   config = lib.mkMerge [
     (commonUtils.mkLxcConfig {
@@ -89,7 +97,7 @@ in {
       ipAddress = "192.168.1.69";
     })
     {
-      # Enable Anubis with instances for each domain
+      # Enable Anubis with instances only for non-SSL domains
       services.anubis = {
         defaultOptions = {
           # Default configuration for all anubis instances
