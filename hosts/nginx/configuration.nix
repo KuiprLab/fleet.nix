@@ -103,7 +103,6 @@ security.acme = {
   defaults = {
     email = "me@dinama.dev";
     dnsProvider = "hetzner";
-    extraDomainNames = [];
     credentialsFile = "/etc/letsencrypt/hetzner-api.env";
     dnsPropagationCheck = true;
     renewInterval = "daily";
