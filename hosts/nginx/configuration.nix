@@ -1,4 +1,10 @@
-{ pkgs, lib, modulesPath, config, ... }: let
+{
+  pkgs,
+  lib,
+  modulesPath,
+  config,
+  ...
+}: let
   # Define a mapping of domains to their target servers and ports
   proxyTargets = {
     "xdr.hl.kuipr.de" = {
@@ -28,51 +34,51 @@
     };
   };
 
-# Filter only non-SSL targets for Anubis
-anubisTargets = lib.filterAttrs (_: v: v.isSSL == false) proxyTargets;
+  # Filter only non-SSL targets for Anubis
+  anubisTargets = lib.filterAttrs (_: v: v.isSSL == false) proxyTargets;
 
-# Create Anubis instances only for those
-anubisInstances = lib.mapAttrs'
-  (domain: target: {
-    name = lib.strings.sanitizeDerivationName domain;
-    value = {
-      settings = {
-        TARGET = "http://${target.ip}:${toString target.port}";
-        USE_REMOTE_ADDRESS = true;
-        TARGET_INSECURE_SKIP_VERIFY = true;
+  # Create Anubis instances only for those
+  anubisInstances =
+    lib.mapAttrs'
+    (domain: target: {
+      name = lib.strings.sanitizeDerivationName domain;
+      value = {
+        settings = {
+          TARGET = "http://${target.ip}:${toString target.port}";
+          USE_REMOTE_ADDRESS = true;
+          TARGET_INSECURE_SKIP_VERIFY = true;
+        };
       };
-    };
-  })
-  anubisTargets;
+    })
+    anubisTargets;
 
   # Function to generate NGINX virtual hosts with Anubis protection
-mkVirtualHost = domain: targetConfig: {
-  name = domain;
-  value = {
-    enableACME = true;
-    forceSSL = true;
-    locations."/" = let
-      sanitizedName = lib.strings.sanitizeDerivationName domain;
-      proxyPassUrl = if targetConfig.isSSL then
-        "https://${targetConfig.ip}:${toString targetConfig.port}"
-      else
-        "http://unix:${config.services.anubis.instances.${sanitizedName}.settings.BIND}";
-    in {
-      proxyPass = proxyPassUrl;
-      proxyWebsockets = true;
-      extraConfig = ''
-        proxy_ssl_server_name on;
-        proxy_pass_header Authorization;
-      '';
+  mkVirtualHost = domain: targetConfig: {
+    name = domain;
+    value = {
+      enableACME = true;
+      forceSSL = true;
+      locations."/" = let
+        sanitizedName = lib.strings.sanitizeDerivationName domain;
+        proxyPassUrl =
+          if targetConfig.isSSL
+          then "https://${targetConfig.ip}:${toString targetConfig.port}"
+          else "http://unix:${config.services.anubis.instances.${sanitizedName}.settings.BIND}";
+      in {
+        proxyPass = proxyPassUrl;
+        proxyWebsockets = true;
+        extraConfig = ''
+          proxy_ssl_server_name on;
+          proxy_pass_header Authorization;
+        '';
+      };
     };
   };
-};
 
   # Convert the domain-target mapping to virtual hosts
   virtualHosts = lib.mapAttrs' (domain: target: mkVirtualHost domain target) proxyTargets;
 
-  commonUtils = import ../../utils/common.nix { inherit pkgs; };
-
+  commonUtils = import ../../utils/common.nix {inherit pkgs;};
 in {
   imports = [
     (modulesPath + "/virtualisation/proxmox-lxc.nix")
@@ -85,17 +91,23 @@ in {
       ipAddress = "192.168.1.69";
     })
     {
+      services.tailscale.enable = true;
 
+      # Enable IP forwarding
+      networking.enableIPv6 = true; # If needed
+      networking.nat.enable = true;
 
-
-services.tailscale.enable = true;
+      boot.kernel.sysctl = {
+        "net.ipv4.ip_forward" = 1;
+        "net.ipv6.conf.all.forwarding" = 1;
+      };
       # Enable Anubis with instances for each domain
       services.anubis = {
         defaultOptions = {
           # Default configuration for all anubis instances
           settings = {
-            DIFFICULTY = 4;  # Default challenge difficulty
-            SERVE_ROBOTS_TXT = true;  # Serve default robots.txt that blocks AI bots
+            DIFFICULTY = 4; # Default challenge difficulty
+            SERVE_ROBOTS_TXT = true; # Serve default robots.txt that blocks AI bots
           };
         };
         instances = anubisInstances;
@@ -109,7 +121,7 @@ services.tailscale.enable = true;
       };
 
       # Add nginx user to anubis group for socket access
-      users.users.nginx.extraGroups = [ config.users.groups.anubis.name ];
+      users.users.nginx.extraGroups = [config.users.groups.anubis.name];
 
       security.acme = {
         acceptTerms = true;
@@ -131,7 +143,7 @@ services.tailscale.enable = true;
       # Open required ports
       networking.firewall = {
         enable = true;
-        allowedTCPPorts = [ 80 443 9113 22 ]; # HTTP, HTTPS, HAProxy stats, SSH
+        allowedTCPPorts = [80 443 9113 22]; # HTTP, HTTPS, HAProxy stats, SSH
       };
 
       # Additional packages
