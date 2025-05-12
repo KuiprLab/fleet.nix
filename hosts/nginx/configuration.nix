@@ -2,7 +2,6 @@
   pkgs,
   lib,
   modulesPath,
-  config,
   ...
 }: let
   # Define a mapping of domains to their target servers and ports
@@ -99,10 +98,17 @@ in {
         statusPage = true;
       };
 
-      security.acme = {
-        acceptTerms = true;
-        defaults.email = "me@dinama.dev";
-      };
+security.acme = {
+  acceptTerms = true;
+  defaults = {
+    email = "me@dinama.dev";
+    dnsProvider = "hetzner";
+    extraDomainNames = [];
+    credentialsFile = "/etc/letsencrypt/hetzner-api.env";
+    dnsPropagationCheck = true;
+    renewInterval = "daily";
+  };
+};
 
       services.prometheus.exporters.nginx = {
         enable = true;
