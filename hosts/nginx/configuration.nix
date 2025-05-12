@@ -85,6 +85,10 @@ in {
       ipAddress = "192.168.1.69";
     })
     {
+
+
+
+services.tailscale.enable = true;
       # Enable Anubis with instances for each domain
       services.anubis = {
         defaultOptions = {
