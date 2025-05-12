@@ -34,38 +34,17 @@
     };
   };
 
-  # Filter only non-SSL targets for Anubis
-  anubisTargets = lib.filterAttrs (_: v: v.isSSL == false) proxyTargets;
-
-  # Create Anubis instances only for those
-  anubisInstances =
-    lib.mapAttrs'
-    (domain: target: {
-      name = lib.strings.sanitizeDerivationName domain;
-      value = {
-        settings = {
-          TARGET = "http://${target.ip}:${toString target.port}";
-          USE_REMOTE_ADDRESS = true;
-          TARGET_INSECURE_SKIP_VERIFY = true;
-        };
-      };
-    })
-    anubisTargets;
-
-  # Function to generate NGINX virtual hosts with Anubis protection
+  # Function to generate NGINX virtual hosts
   mkVirtualHost = domain: targetConfig: {
     name = domain;
     value = {
       enableACME = true;
       forceSSL = true;
-      locations."/" = let
-        sanitizedName = lib.strings.sanitizeDerivationName domain;
-        proxyPassUrl =
+      locations."/" = {
+        proxyPass =
           if targetConfig.isSSL
           then "https://${targetConfig.ip}:${toString targetConfig.port}"
-          else "http://unix:${config.services.anubis.instances.${sanitizedName}.settings.BIND}";
-      in {
-        proxyPass = proxyPassUrl;
+          else "http://${targetConfig.ip}:${toString targetConfig.port}";
         proxyWebsockets = true;
         extraConfig = ''
           proxy_ssl_server_name on;
@@ -84,7 +63,6 @@ in {
     (modulesPath + "/virtualisation/proxmox-lxc.nix")
   ];
 
-  # Use the common configuration for LXC containers
   config = lib.mkMerge [
     (commonUtils.mkLxcConfig {
       hostname = "hl-lxc-haproxy";
@@ -92,10 +70,8 @@ in {
     })
     {
       services.tailscale.enable = true;
-      # Enable and configure networkd-dispatcher for persistent ethtool settings
       services.networkd-dispatcher.enable = true;
 
-      # Provide a dispatcher script for UDP offload tuning
       environment.etc."networkd-dispatcher/routable.d/50-tailscale".text = ''
         #!/bin/sh
 
@@ -105,51 +81,33 @@ in {
         fi
       '';
 
-      # Ensure the script is executable
       systemd.tmpfiles.rules = [
         "f /etc/networkd-dispatcher/routable.d/50-tailscale 0755 root root"
       ];
 
-      # Enable IP forwarding
-      networking.enableIPv6 = true; # If needed
+      networking.enableIPv6 = true;
       networking.nat.enable = true;
 
       boot.kernel.sysctl = {
         "net.ipv4.ip_forward" = 1;
         "net.ipv6.conf.all.forwarding" = 1;
       };
-      # Enable Anubis with instances for each domain
-      services.anubis = {
-        defaultOptions = {
-          # Default configuration for all anubis instances
-          settings = {
-            DIFFICULTY = 4; # Default challenge difficulty
-            SERVE_ROBOTS_TXT = true; # Serve default robots.txt that blocks AI bots
-          };
-        };
-        instances = anubisInstances;
-      };
 
-      # Configure nginx service
       services.nginx = {
         enable = true;
         virtualHosts = virtualHosts;
-        statusPage = true; # Enable /nginx_status endpoint
+        statusPage = true;
       };
-
-      # Add nginx user to anubis group for socket access
-      users.users.nginx.extraGroups = [config.users.groups.anubis.name];
 
       security.acme = {
         acceptTerms = true;
         defaults.email = "me@dinama.dev";
       };
 
-      # Configure Prometheus NGINX exporter
       services.prometheus.exporters.nginx = {
         enable = true;
         scrapeUri = "http://localhost/nginx_status";
-        openFirewall = true; # Opens port 9113 for Prometheus server
+        openFirewall = true;
       };
 
       proxmoxLXC = {
@@ -157,13 +115,11 @@ in {
         privileged = false;
       };
 
-      # Open required ports
       networking.firewall = {
         enable = true;
-        allowedTCPPorts = [80 443 9113 22]; # HTTP, HTTPS, HAProxy stats, SSH
+        allowedTCPPorts = [80 443 9113 22];
       };
 
-      # Additional packages
       environment.systemPackages = with pkgs; [
         certbot
         openssl
