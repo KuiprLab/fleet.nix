@@ -7,27 +7,27 @@
 }: let
   # Define a mapping of domains to their target servers and ports
   proxyTargets = {
-    "xdr.hl.kuipr.de" = {
+    "xdr.internal.kuipr.de" = {
       ip = "192.168.1.2";
       port = 443;
       isSSL = true;
     };
-    "pve.hl.kuipr.de" = {
+    "pve.internal.kuipr.de" = {
       ip = "192.168.1.85";
       port = 8006;
       isSSL = true;
     };
-    "truenas.hl.kuipr.de" = {
+    "truenas.internal.kuipr.de" = {
       ip = "192.168.1.122";
       port = 443;
       isSSL = true;
     };
-    "ui.hl.kuipr.de" = {
+    "ui.internal.kuipr.de" = {
       ip = "192.168.1.155";
       port = 844;
       isSSL = true;
     };
-    "hb.hl.kuipr.de" = {
+    "hb.internal.kuipr.de" = {
       ip = "192.168.1.10";
       port = 8581;
       isSSL = false;
@@ -92,23 +92,23 @@ in {
     })
     {
       services.tailscale.enable = true;
-# Enable and configure networkd-dispatcher for persistent ethtool settings
-services.networkd-dispatcher.enable = true;
+      # Enable and configure networkd-dispatcher for persistent ethtool settings
+      services.networkd-dispatcher.enable = true;
 
-# Provide a dispatcher script for UDP offload tuning
-environment.etc."networkd-dispatcher/routable.d/50-tailscale".text = ''
-  #!/bin/sh
+      # Provide a dispatcher script for UDP offload tuning
+      environment.etc."networkd-dispatcher/routable.d/50-tailscale".text = ''
+        #!/bin/sh
 
-  NETDEV="$(ip -o route get 8.8.8.8 | awk '{print $5}')"
-  if [ -n "$NETDEV" ]; then
-    /run/wrappers/bin/ethtool -K "$NETDEV" rx-udp-gro-forwarding on rx-gro-list off
-  fi
-'';
+        NETDEV="$(ip -o route get 8.8.8.8 | awk '{print $5}')"
+        if [ -n "$NETDEV" ]; then
+          /run/wrappers/bin/ethtool -K "$NETDEV" rx-udp-gro-forwarding on rx-gro-list off
+        fi
+      '';
 
-# Ensure the script is executable
-systemd.tmpfiles.rules = [
-  "f /etc/networkd-dispatcher/routable.d/50-tailscale 0755 root root"
-];
+      # Ensure the script is executable
+      systemd.tmpfiles.rules = [
+        "f /etc/networkd-dispatcher/routable.d/50-tailscale 0755 root root"
+      ];
 
       # Enable IP forwarding
       networking.enableIPv6 = true; # If needed
