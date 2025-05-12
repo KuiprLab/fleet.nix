@@ -92,6 +92,23 @@ in {
     })
     {
       services.tailscale.enable = true;
+# Enable and configure networkd-dispatcher for persistent ethtool settings
+services.networkd-dispatcher.enable = true;
+
+# Provide a dispatcher script for UDP offload tuning
+environment.etc."networkd-dispatcher/routable.d/50-tailscale".text = ''
+  #!/bin/sh
+
+  NETDEV="$(ip -o route get 8.8.8.8 | awk '{print $5}')"
+  if [ -n "$NETDEV" ]; then
+    /run/wrappers/bin/ethtool -K "$NETDEV" rx-udp-gro-forwarding on rx-gro-list off
+  fi
+'';
+
+# Ensure the script is executable
+systemd.tmpfiles.rules = [
+  "f /etc/networkd-dispatcher/routable.d/50-tailscale 0755 root root"
+];
 
       # Enable IP forwarding
       networking.enableIPv6 = true; # If needed
@@ -150,6 +167,7 @@ in {
       environment.systemPackages = with pkgs; [
         certbot
         openssl
+        ethtool
       ];
     }
   ];
