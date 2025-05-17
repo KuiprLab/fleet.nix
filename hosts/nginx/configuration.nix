@@ -6,11 +6,6 @@
 }: let
   # Define a mapping of domains to their target servers and ports
   proxyTargets = {
-    "xdr.internal.kuipr.de" = {
-      ip = "192.168.1.2";
-      port = 443;
-      isSSL = true;
-    };
     "pve.internal.kuipr.de" = {
       ip = "192.168.1.85";
       port = 8006;
@@ -22,8 +17,8 @@
       isSSL = true;
     };
     "ui.internal.kuipr.de" = {
-      ip = "192.168.1.155";
-      port = 844;
+      ip = "192.168.1.213";
+      port = 8443;
       isSSL = true;
     };
     "hb.internal.kuipr.de" = {

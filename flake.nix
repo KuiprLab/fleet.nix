@@ -45,6 +45,18 @@
             ./hosts/bind/configuration.nix
           ];
       };
+
+
+      hl-lxc-unifi = nixpkgs.lib.nixosSystem {
+        inherit system pkgs;
+        specialArgs = {inherit self;};
+        modules =
+          commonModules
+          ++ [
+            ./hosts/unifi/configuration.nix
+          ];
+      };
+
       hl-lxc-homebridge = nixpkgs.lib.nixosSystem {
         inherit system pkgs;
         specialArgs = {inherit self;};
@@ -73,6 +85,16 @@
           user = "root";
           sshUser = "root";
           path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.hl-lxc-bind;
+        };
+      };
+
+
+      hl-lxc-unifi = {
+        hostname = "192.168.1.213";
+        profiles.system = {
+          user = "root";
+          sshUser = "root";
+          path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.hl-lxc-unifi;
         };
       };
 
