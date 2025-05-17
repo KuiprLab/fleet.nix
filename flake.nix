@@ -46,7 +46,6 @@
           ];
       };
 
-
       hl-lxc-unifi = nixpkgs.lib.nixosSystem {
         inherit system pkgs;
         specialArgs = {inherit self;};
@@ -87,7 +86,6 @@
           path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.hl-lxc-bind;
         };
       };
-
 
       hl-lxc-unifi = {
         hostname = "192.168.1.213";
