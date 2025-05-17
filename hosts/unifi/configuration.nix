@@ -26,6 +26,8 @@ in {
       };
 
       services.unifi = {
+        unifiPackage = pkgs.unifi8;
+        mongodbPackage = pkgs.mongodb-7_0;
         enable = true;
         openFirewall = true;
       };
