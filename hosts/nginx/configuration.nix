@@ -14,7 +14,7 @@
     "pve.internal.kuipr.de" = {
       ip = "192.168.1.85";
       port = 8006;
-      isSSL = false;
+      isSSL = true;
     };
     "truenas.internal.kuipr.de" = {
       ip = "192.168.1.122";
