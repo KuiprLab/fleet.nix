@@ -25,7 +25,7 @@ in {
         allowedTCPPorts = [8443 22]; # HTTP, HTTPS, HAProxy stats, SSH
       };
 
-      services.networking.unifi = {
+      services.unifi = {
         enable = true;
         openFirewall = true;
       };
