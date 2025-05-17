@@ -17,8 +17,18 @@
     deploy-rs,
     ...
   } @ inputs: let
+    nixpkgsConfig = {
+      allowUnfree = true;
+      allowUnsupportedSystem = false;
+      allowBroken = true;
+      allowInsecure = true; # Fixed typo here
+    };
     system = "x86_64-linux";
-    pkgs = import nixpkgs {inherit system;};
+    pkgs = import nixpkgs {
+      inherit system;
+
+      config = nixpkgsConfig;
+    };
 
     # Common modules for all hosts
     commonModules = [
