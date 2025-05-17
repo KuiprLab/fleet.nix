@@ -98,16 +98,16 @@ in {
         statusPage = true;
       };
 
-security.acme = {
-  acceptTerms = true;
-  defaults = {
-    email = "me@dinama.dev";
-    dnsProvider = "hetzner";
-    credentialsFile = "/etc/letsencrypt/hetzner-api.env";
-    dnsPropagationCheck = true;
-    renewInterval = "daily";
-  };
-};
+      security.acme = {
+        acceptTerms = true;
+        defaults = {
+          email = "me@dinama.dev";
+          dnsProvider = "hetzner";
+          credentialsFile = "/etc/letsencrypt/hetzner-api.env";
+          dnsPropagationCheck = true;
+          renewInterval = "daily";
+        };
+      };
 
       services.prometheus.exporters.nginx = {
         enable = true;
