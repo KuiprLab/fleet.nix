@@ -16,11 +16,6 @@
       port = 443;
       isSSL = true;
     };
-    "ui.internal.kuipr.de" = {
-      ip = "192.168.1.213";
-      port = 8443;
-      isSSL = true;
-    };
     "hb.internal.kuipr.de" = {
       ip = "192.168.1.10";
       port = 8581;
