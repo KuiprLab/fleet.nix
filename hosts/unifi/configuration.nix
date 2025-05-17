@@ -22,7 +22,7 @@ in {
     {
       networking.firewall = {
         enable = false;
-        allowedTCPPorts = [8581 22]; # HTTP, HTTPS, HAProxy stats, SSH
+        allowedTCPPorts = [8443 22]; # HTTP, HTTPS, HAProxy stats, SSH
       };
 
       services.networking.unifi = {
