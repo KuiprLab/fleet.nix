@@ -62,6 +62,7 @@ in {
         log-driver = "journald";
         extraOptions = [
           "--network=host"
+      "--cap-add=NET_RAW" # Add necessary capabilities
         ];
       };
       systemd.services."podman-homebridge-homebridge" = {
