@@ -29,23 +29,23 @@
       Type = "oneshot";
       ExecStart = pkgs.writeShellScript "check-nixos-updates" ''
         set -e
-        LOG_FILE="/var/log/nixos-update.log"
-        echo "[$(date)] Checking for updates..." >> $LOG_FILE
+        # LOG_FILE="/var/log/nixos-update.log"
+        # echo "[$(date)] Checking for updates..." >> $LOG_FILE
         cd /etc/nixos
         ${pkgs.git}/bin/git fetch origin
         LOCAL=$(${pkgs.git}/bin/git rev-parse HEAD)
         REMOTE=$(${pkgs.git}/bin/git rev-parse origin/main)
         if [ "$LOCAL" != "$REMOTE" ]; then
-          echo "[$(date)] Updates detected, pulling changes..." >> $LOG_FILE
+          # echo "[$(date)] Updates detected, pulling changes..." >> $LOG_FILE
           ${pkgs.git}/bin/git pull origin main
           # Apply the latest configuration directly without checking for deployment tags
-          echo "[$(date)] Applying latest configuration" >> $LOG_FILE
+          # echo "[$(date)] Applying latest configuration" >> $LOG_FILE
           ${pkgs.nixos-rebuild}/bin/nixos-rebuild switch --flake .#$(hostname) 2>&1 | tee -a $LOG_FILE
           # Notify of successful update
-          echo "[$(date)] System updated successfully to commit $(${pkgs.git}/bin/git rev-parse --short HEAD)" >> $LOG_FILE
+          # echo "[$(date)] System updated successfully to commit $(${pkgs.git}/bin/git rev-parse --short HEAD)" >> $LOG_FILE
           ${pkgs.libnotify}/bin/notify-send "NixOS Update" "System updated to latest commit" || true
         else
-          echo "[$(date)] No updates found." >> $LOG_FILE
+          # echo "[$(date)] No updates found." >> $LOG_FILE
         fi
       '';
       TimeoutSec = "300";
@@ -74,10 +74,10 @@
     };
   };
   # Create log file
-  system.activationScripts.createUpdateLogFile = ''
-    touch /var/log/nixos-update.log
-    chmod 644 /var/log/nixos-update.log
-  '';
+  # system.activationScripts.createUpdateLogFile = ''
+  #   touch /var/log/nixos-update.log
+  #   chmod 644 /var/log/nixos-update.log
+  # '';
   # Link current system to flake input if provided
   nix.registry = lib.mkIf (self != null) {
     current.flake = self;
