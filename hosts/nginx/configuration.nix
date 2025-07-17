@@ -11,7 +11,7 @@
       port = 8006;
       isSSL = true;
     };
-    "truenas.internal.kuipr.de" = {
+    "nas.internal.kuipr.de" = {
       ip = "192.168.1.122";
       port = 443;
       isSSL = true;
