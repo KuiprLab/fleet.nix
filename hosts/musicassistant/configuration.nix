@@ -27,8 +27,6 @@ in {
         dockerCompat = true;
       };
 
-
-
       myFolders = {
         homebridge = {
           path = "/var/lib/music-assistant";
