@@ -55,7 +55,7 @@ in {
           "LOG_LEVEL" = "info";
         };
         volumes = [
-          "var/lib/music-assistant:/data:rw"
+          "/var/lib/music-assistant:/data:rw"
         ];
         log-driver = "journald";
         extraOptions = [
