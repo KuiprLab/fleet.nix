@@ -114,6 +114,16 @@
           path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.hl-lxc-homebridge;
         };
       };
+
+
+      hl-lxc-musicassistant = {
+        hostname = "192.168.1.11";
+        profiles.system = {
+          user = "root";
+          sshUser = "root";
+          path = deploy-rs.lib.x86_64-linux.activate.nixos self.nixosConfigurations.hl-lxc-musicassistant;
+        };
+      };
     };
 
     # Check deployments
