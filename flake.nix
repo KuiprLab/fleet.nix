@@ -75,6 +75,18 @@
             ./hosts/homebridge/configuration.nix
           ];
       };
+
+
+
+      hl-lxc-musicassistant = nixpkgs.lib.nixosSystem {
+        inherit system pkgs;
+        specialArgs = {inherit self;};
+        modules =
+          commonModules
+          ++ [
+            ./hosts/musicassistant/configuration.nix
+          ];
+      };
     };
 
     # Deployment configuration using deploy-rs
