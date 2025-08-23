@@ -62,25 +62,29 @@
     nix = {
       gc = {
         automatic = true;
-        dates = "weekly";
-        options = "--delete-older-than 7d";
+        dates = "daily";
+        options = "--delete-older-than 2d";
       };
       optimise = {
         automatic = true;
-        dates = ["03:45"]; # Optional; allows customizing optimisation schedule
+        dates = ["03:45"];
       };
       settings = {
         auto-optimise-store = true;
         sandbox = false;
-        # Add Cachix binary caches (replace "your-cache" with your Cachix cache name)
-        experimental-features = ["nix-command" "flakes"]; # Enable nix command & flakes
+        # # Aggressive garbage collection with 8GB limit
+        min-free = 8 * 1024 * 1024 * 1024; # 8GB in bytes
+        max-free = 16 * 1024 * 1024 * 1024; # 16GB in bytes
+        keep-generations = 3;
+        keep-derivations = false;
+        keep-env-derivations = false;
+        keep-outputs = false;
+        experimental-features = ["nix-command" "flakes"];
         trusted-binary-caches = [
           "https://cache.nixos.org/"
         ];
-
         substituters = [
           "https://cache.nixos.org"
-          # nix community's cache server
           "https://nix-community.cachix.org"
         ];
         trusted-public-keys = [
@@ -88,6 +92,23 @@
         ];
       };
     };
+
+    # Clean up boot entries (keep only last 5)
+    boot.loader.systemd-boot.configurationLimit = 5;
+    boot.loader.grub.configurationLimit = 5;
+
+    # Clean up journal logs
+    services.journald.extraConfig = ''
+      MaxRetentionSec=7d
+      MaxFileSec=1d
+      SystemMaxUse=100M
+    '';
+
+    # Clean up temporary files
+    systemd.tmpfiles.rules = [
+      "d /tmp 1777 root root 7d"
+      "d /var/tmp 1777 root root 30d"
+    ];
 
     # Workaround for https://github.com/NixOS/nixpkgs/issues/157918
     systemd.mounts = [
