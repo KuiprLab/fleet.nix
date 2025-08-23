@@ -12,13 +12,11 @@ in {
     (modulesPath + "/virtualisation/proxmox-lxc.nix")
     ../../utils/my-declared-folders.nix
   ];
-
   config = lib.mkMerge [
     (commonUtils.mkLxcConfig {
       hostname = "hl-lxc-musicassistant";
       ipAddress = "192.168.1.11";
     })
-
     {
       # Runtime
       virtualisation.podman = {
@@ -26,7 +24,6 @@ in {
         autoPrune.enable = true;
         dockerCompat = true;
       };
-
       myFolders = {
         homebridge = {
           path = "/var/lib/music-assistant";
@@ -35,13 +32,10 @@ in {
           mode = "0755";
         };
       };
-
-
       networking.firewall = {
         enable = false;
         allowedTCPPorts = [8097 8085 22]; # HTTP, HTTPS, HAProxy stats, SSH
       };
-
       # Enable container name DNS for all Podman networks.
       networking.firewall.interfaces = let
         matchAll =
@@ -51,7 +45,6 @@ in {
       in {
         "${matchAll}".allowedUDPPorts = [53];
       };
-
       virtualisation.oci-containers.backend = "podman";
 
       # Containers
@@ -71,7 +64,32 @@ in {
           "--security-opt=apparmor:unconfined"
         ];
       };
+
+      # AirConnect container for AirPlay to Chromecast/Google Home bridging
+      virtualisation.oci-containers.containers."airconnect" = {
+        image = "1activegeek/airconnect:latest";
+        log-driver = "journald";
+        extraOptions = [
+          "--network=host"
+          # Host networking is required for mDNS discovery of Chromecast devices
+          # and for AirPlay device advertisement
+        ];
+      };
+
+      # Services
       systemd.services."podman-music-assistant-server" = {
+        serviceConfig = {
+          Restart = lib.mkOverride 90 "always";
+        };
+        partOf = [
+          "podman-compose-musicassistant-root.target"
+        ];
+        wantedBy = [
+          "podman-compose-musicassistant-root.target"
+        ];
+      };
+
+      systemd.services."podman-airconnect" = {
         serviceConfig = {
           Restart = lib.mkOverride 90 "always";
         };
