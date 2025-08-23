@@ -78,7 +78,7 @@ in {
       networking.firewall = {
         enable = true;
         allowedUDPPorts = [53];
-        allowedTCPPorts = [22 53 9119];
+        allowedTCPPorts = [22 53 9119 8053];
       };
 
       systemd.services.bind-backup = {
