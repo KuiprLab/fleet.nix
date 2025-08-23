@@ -75,7 +75,6 @@
         # # Aggressive garbage collection with 8GB limit
         min-free = 8 * 1024 * 1024 * 1024; # 8GB in bytes
         max-free = 16 * 1024 * 1024 * 1024; # 16GB in bytes
-        keep-generations = 3;
         keep-derivations = false;
         keep-env-derivations = false;
         keep-outputs = false;
