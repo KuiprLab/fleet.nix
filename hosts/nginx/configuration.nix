@@ -16,6 +16,11 @@
       port = 443;
       isSSL = true;
     };
+    "sync.internal.kuipr.de" = {
+      ip = "192.168.1.122";
+      port = 8384;
+      isSSL = true;
+    };
     "hb.internal.kuipr.de" = {
       ip = "192.168.1.10";
       port = 8581;
