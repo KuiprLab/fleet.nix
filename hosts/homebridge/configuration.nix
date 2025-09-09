@@ -55,7 +55,7 @@ in {
 
       # Containers
       virtualisation.oci-containers.containers."homebridge-homebridge" = {
-        image = "homebridge/homebridge:latest";
+        image = "docker.io/homebridge/homebridge:latest";
         volumes = [
           "/var/lib/homebridge:/homebridge:rw"
         ];
