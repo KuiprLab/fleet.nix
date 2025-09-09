@@ -53,6 +53,9 @@ in {
         environment = {
           "LOG_LEVEL" = "info";
         };
+        labels = {
+          "io.containers.autoupdate" = "registry";
+        };
         volumes = [
           "/var/lib/music-assistant:/data:rw"
         ];

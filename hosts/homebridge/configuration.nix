@@ -59,6 +59,9 @@ in {
         volumes = [
           "/var/lib/homebridge:/homebridge:rw"
         ];
+        labels = {
+          "io.containers.autoupdate" = "registry";
+        };
         log-driver = "journald";
         extraOptions = [
           "--network=host"
