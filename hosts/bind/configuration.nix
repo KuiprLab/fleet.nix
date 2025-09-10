@@ -53,10 +53,10 @@ in {
         enable = true;
         cacheNetworks = ["192.168.1.0/24" "10.0.0.0/24" "127.0.0.0/8"];
         ipv4Only = true;
-        forwarders = ["1.1.1.1" "8.8.8.8"];
+        forwarders = ["1.1.1.1" "1.0.0.1" "8.8.8.8" "8.8.4.4"];
         zones = primaryZones;
         extraOptions = ''
-          dnssec-validation auto;
+          dnssec-validation no;
           recursion yes;
           allow-recursion { cacheNetworks; };
           listen-on { any; };
@@ -64,7 +64,6 @@ in {
           
           // Increase timeout and retry settings
           resolver-query-timeout 10;
-          resolver-retry-interval 2;
           
           // Improve concurrency handling
           recursive-clients 1000;
@@ -77,6 +76,9 @@ in {
           
           // Reduce SERVFAIL caching
           servfail-ttl 1;
+          
+          // Forward first to use forwarders before recursion
+          forward first;
         '';
       };
 
