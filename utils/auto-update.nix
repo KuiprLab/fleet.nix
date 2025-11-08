@@ -89,6 +89,33 @@
     touch /var/log/nixos-update.log
     chmod 644 /var/log/nixos-update.log
   '';
+  # Podman auto-update configuration
+  virtualisation.podman = {
+    enable = true;
+  };
+
+  # Podman auto-update systemd service
+  systemd.services.podman-auto-update = {
+    description = "Podman auto-update service";
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.podman}/bin/podman auto-update --all";
+      TimeoutSec = "300";
+      Restart = "on-failure";
+      RestartSec = "30s";
+    };
+  };
+
+  systemd.timers.podman-auto-update = {
+    wantedBy = ["timers.target"];
+    partOf = ["podman-auto-update.service"];
+    timerConfig = {
+      OnBootSec = "5min";
+      OnUnitActiveSec = "daily";
+      RandomizedDelaySec = "1h";
+    };
+  };
+
   # Link current system to flake input if provided
   nix.registry = lib.mkIf (self != null) {
     current.flake = self;
