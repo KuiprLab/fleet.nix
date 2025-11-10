@@ -61,22 +61,22 @@ in {
           allow-recursion { cacheNetworks; };
           listen-on { any; };
           querylog yes;
-          
+
           // Increase timeout and retry settings
           resolver-query-timeout 10;
-          
+
           // Improve concurrency handling
           recursive-clients 1000;
           tcp-clients 100;
-          
+
           // Cache tuning
           max-cache-size 256M;
           max-cache-ttl 86400;
           max-ncache-ttl 3600;
-          
+
           // Reduce SERVFAIL caching
           servfail-ttl 1;
-          
+
           // Forward first to use forwarders before recursion
           forward first;
         '';

@@ -1,6 +1,7 @@
 alias d := deploy
 alias u := update
 alias c := clean
+alias s := storage
 
 default:
     just --list
@@ -38,3 +39,19 @@ clean:
     fi
 
     echo "✅ Manual cleanup completed!"
+
+
+# Show available storage space
+storage:
+    @df -h /
+
+
+# Resize LXC container disk (must be run on Proxmox host)
+resize-disk:
+    @echo "⚠️  For LXC containers, disk resize must be done on the Proxmox host."
+    @echo ""
+    @echo "Run this command on your Proxmox host:"
+    @echo "  pct resize 111 rootfs 23G"
+    @echo ""
+    @echo "The container filesystem will automatically expand on next reboot,"
+    @echo "or you can try running 'resize2fs' inside the container if available."
