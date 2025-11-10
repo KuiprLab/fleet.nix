@@ -76,9 +76,6 @@ in {
 
           // Reduce SERVFAIL caching
           servfail-ttl 1;
-
-          // Forward first to use forwarders before recursion
-          forward first;
         '';
       };
 
