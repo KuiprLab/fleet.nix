@@ -7,10 +7,10 @@
     networking = {
       hostName = hostname;
       defaultGateway = {
-        address = "192.168.1.1";
+        address = "192.168.0.1";
         interface = "eth0";
       };
-      nameservers = ["192.168.1.70" "9.9.9.9"];
+      nameservers = ["192.168.0.70" "9.9.9.9"];
       interfaces.eth0 = {
         ipv4.addresses = [
           {
