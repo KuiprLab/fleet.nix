@@ -16,7 +16,7 @@ in {
   config = lib.mkMerge [
     (commonUtils.mkLxcConfig {
       hostname = "hl-lxc-homebridge";
-      ipAddress = "192.168.1.10";
+      ipAddress = "192.168.0.10";
     })
 
     {
