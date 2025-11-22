@@ -90,7 +90,7 @@
     # Deployment configuration using deploy-rs
     deploy.nodes = {
       hl-lxc-nginx = {
-        hostname = "192.168.1.69";
+        hostname = "192.168.0.69";
         profiles.system = {
           user = "root";
           sshUser = "root";
@@ -99,7 +99,7 @@
       };
 
       hl-lxc-bind = {
-        hostname = "192.168.1.70";
+        hostname = "192.168.0.70";
         profiles.system = {
           user = "root";
           sshUser = "root";
@@ -108,7 +108,7 @@
       };
 
       hl-lxc-unifi = {
-        hostname = "192.168.1.213";
+        hostname = "192.168.0.213";
         profiles.system = {
           user = "root";
           sshUser = "root";
@@ -117,7 +117,7 @@
       };
 
       hl-lxc-homebridge = {
-        hostname = "192.168.1.10";
+        hostname = "192.168.0.10";
         profiles.system = {
           user = "root";
           sshUser = "root";
@@ -126,7 +126,7 @@
       };
 
       hl-lxc-musicassistant = {
-        hostname = "192.168.1.11";
+        hostname = "192.168.0.11";
         profiles.system = {
           user = "root";
           sshUser = "root";
