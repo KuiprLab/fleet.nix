@@ -21,5 +21,11 @@
       PermitEmptyPasswords = "yes";
     };
   };
+  systemd.mounts = [
+    {
+      where = "/sys/kernel/debug";
+      enable = false;
+    }
+  ];
   system.stateVersion = "24.11";
 }

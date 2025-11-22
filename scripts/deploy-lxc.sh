@@ -9,7 +9,7 @@ PROXMOX_HOST=""
 CONTAINER_ID=""
 CONTAINER_NAME=""
 CONTAINER_IP=""
-CONTAINER_GATEWAY="192.168.1.1"
+CONTAINER_GATEWAY="192.168.0.1"
 CONTAINER_NETMASK="24"
 CONTAINER_MEMORY="2024"
 CONTAINER_CORES="3"
@@ -25,7 +25,7 @@ function show_help {
     -i, --id           LXC container ID
     -n, --name         LXC container name
     -p, --ip           LXC container IP address
-    -g, --gateway      Network gateway (default: 192.168.1.1)
+    -g, --gateway      Network gateway (default: 192.168.0.1)
     -m, --mask         Network mask (default: 24)
     --memory           Memory in MB (default: 2024)
     --cores            CPU cores (default: 3)
