@@ -56,6 +56,7 @@ in {
       # Containers
       virtualisation.oci-containers.containers."homebridge-homebridge" = {
         image = "docker.io/homebridge/homebridge:latest";
+        cmd = ["sh" "-c" "apt-get update && apt-get install -y sshpass && exec /opt/homebridge/startup.sh"];
         volumes = [
           "/var/lib/homebridge:/homebridge:rw"
         ];
